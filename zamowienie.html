@@ -154,30 +154,54 @@ const STEPS=[
 ];
 
 /* ─── PARSE CODE ─── */
+// Format kodu: type-width-height-depth-shelfCount-sideColor-shelfColor-options
+// Przykład: h-44-80-10-5-0-0-s
 function parseCode(raw) {
   if (!raw) return null;
-  const code = raw.trim();
+  const code = raw.trim().toLowerCase();
   try {
-    if (code.startsWith('M-')) {
-      const p = code.split('-');
+    const p = code.split('-');
+    // Modułowa: m-w44-h80-c20-d10-01-s
+    if (p[0] === 'm' && p.length >= 6) {
       const col = p[5]||'01';
       return {type:'modular',typeLabel:'Modułowa',
-        width:p[1]?.replace('W',''),height:p[2]?.replace('H',''),
-        depth:p[4]?.replace('D',''),shelfCount:null,
-        sideHex:COLOR_HEX[col[0]]||'#8B5A2B',shelfHex:COLOR_HEX[col[1]]||'#FFFFFF',
-        sideLbl:COLOR_LABEL[col[0]]||'Dąb',shelfLbl:COLOR_LABEL[col[1]]||'Biała'};
+        width: p[1]?.replace('w',''),
+        height: p[2]?.replace('h',''),
+        depth: p[4]?.replace('d',''),
+        shelfCount: null,
+        sideHex: COLOR_HEX[col[0]]||'#8B5A2B',
+        shelfHex: COLOR_HEX[col[1]]||'#FFFFFF',
+        sideLbl: COLOR_LABEL[col[0]]||'Dąb',
+        shelfLbl: COLOR_LABEL[col[1]]||'Biała'};
     }
-    const p = code.split('-');
-    const t = p[0];
-    const col = p.find(x=>/^[012]{2}$/.test(x))||'01';
-    return {type:t,typeLabel:TYPE_LABEL[t]||'Stojąca',
-      width:p.find(x=>x.startsWith('W'))?.replace('W',''),
-      height:p.find(x=>x.startsWith('H'))?.replace('H',''),
-      depth:p.find(x=>x.startsWith('D'))?.replace('D',''),
-      shelfCount:p.find(x=>x.startsWith('N'))?.replace('N',''),
-      sideHex:COLOR_HEX[col[0]]||'#8B5A2B',shelfHex:COLOR_HEX[col[1]]||'#FFFFFF',
-      sideLbl:COLOR_LABEL[col[0]]||'Dąb',shelfLbl:COLOR_LABEL[col[1]]||'Biała'};
-  } catch(e){return null;}
+    // Standardowy format: type-width-height-depth-shelfCount-sideColor-shelfColor-options
+    // np. h-44-80-10-5-0-0-s
+    if (p.length >= 7) {
+      const typeChar = p[0];
+      const width     = p[1];
+      const height    = p[2];
+      const depth     = p[3];
+      const shelfCount = p[4];
+      const sideCode  = p[5];
+      const shelfCode = p[6];
+      // opcjonalnie customPositions w p[8]
+      let customPositions = null;
+      if (p[8] && p[8].startsWith('cp')) {
+        customPositions = p[8].substring(2).split('.').map(Number).filter(n=>!isNaN(n));
+      }
+      return {
+        type: typeChar,
+        typeLabel: TYPE_LABEL[typeChar] || 'Stojąca',
+        width, height, depth, shelfCount,
+        customPositions,
+        sideHex:  COLOR_HEX[sideCode]  || '#8B5A2B',
+        shelfHex: COLOR_HEX[shelfCode] || '#FFFFFF',
+        sideLbl:  COLOR_LABEL[sideCode]  || 'Dąb',
+        shelfLbl: COLOR_LABEL[shelfCode] || 'Biała'
+      };
+    }
+    return null;
+  } catch(e){ console.error('parseCode error:', e); return null; }
 }
 
 /* ─── 3D ─── */
@@ -362,7 +386,7 @@ function getStep(name) {
 /* ─── RENDER ─── */
 function renderPage(order, statusName, tracking) {
   const comments = order.user_comments||'';
-  const codeM = comments.match(/Kod:\s*([^\n\r]+)/);
+  const codeM = comments.match(/Kod konfiguracji:\s*([^\n\r]+)/i) || comments.match(/Kod:\s*([^\n\r]+)/i);
   const cfg = parseCode(codeM?.[1]);
   const step = getStep(statusName);
   const total = (order.products||[]).reduce((s,p)=>s+parseFloat(p.price_brutto||0)*parseInt(p.quantity||1),0);
