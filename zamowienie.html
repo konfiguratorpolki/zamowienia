@@ -4,695 +4,692 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Twoje zamówienie — Konfigurator Półek</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root {
-  --cream: #F5F0E8;
-  --warm-white: #FAFAF7;
-  --bark: #8B5A2B;
-  --bark-light: #C4956A;
-  --bark-dark: #5C3A1A;
-  --charcoal: #1C1C1A;
-  --stone: #6B6860;
-  --stone-light: #B8B4AD;
-  --stone-lighter: #E8E4DC;
-  --green: #2D6A4F;
-  --green-light: #52B788;
-  --amber: #E9A84C;
-  --red: #C0392B;
-  --shadow-sm: 0 2px 8px rgba(28,28,26,0.06);
-  --shadow-md: 0 8px 32px rgba(28,28,26,0.10);
-  --shadow-lg: 0 24px 64px rgba(28,28,26,0.14);
-  --radius: 16px;
+  --green:        #16a34a;
+  --green-dark:   #15803d;
+  --green-deeper: #166534;
+  --green-light:  #f0fdf4;
+  --green-mid:    #dcfce7;
+  --green-border: #bbf7d0;
+  --green-text:   #14532d;
+  --white:        #ffffff;
+  --gray-50:      #f9fafb;
+  --gray-100:     #f3f4f6;
+  --gray-200:     #e5e7eb;
+  --gray-300:     #d1d5db;
+  --gray-400:     #9ca3af;
+  --gray-500:     #6b7280;
+  --gray-600:     #4b5563;
+  --gray-700:     #374151;
+  --gray-800:     #1f2937;
+  --gray-900:     #111827;
+  --amber:        #f59e0b;
+  --amber-light:  #fef3c7;
+  --red:          #dc2626;
+  --red-light:    #fef2f2;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.10);
+  --radius: 14px;
   --radius-sm: 8px;
+  --radius-xs: 6px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--cream);
-  color: var(--charcoal);
+  font-family: 'Inter', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-800);
   min-height: 100vh;
-  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── GRAIN OVERLAY ── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 1000;
-  opacity: 0.5;
-}
-
-/* ── HEADER ── */
-.site-header {
-  padding: 24px 40px;
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 32px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--stone-lighter);
-  background: var(--warm-white);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
 }
 .logo {
-  font-family: 'DM Serif Display', serif;
-  font-size: 1.4rem;
-  color: var(--bark-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
+}
+.logo-mark {
+  width: 34px; height: 34px;
+  background: var(--green);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-mark svg { width: 18px; height: 18px; fill: white; }
+.logo-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  letter-spacing: -0.01em;
+}
+.logo-name span { color: var(--green); }
+.topbar-right {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-400);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, var(--green-deeper) 0%, var(--green-dark) 50%, var(--green) 100%);
+  padding: 52px 32px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-inner {
+  max-width: 1060px;
+  margin: 0 auto;
+  position: relative;
+}
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 100px;
+  padding: 5px 14px 5px 8px;
+  margin-bottom: 18px;
+}
+.hero-pill .live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74,222,128,0.5);
+  animation: ping 1.5s ease-in-out infinite;
+}
+@keyframes ping {
+  0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+}
+.hero-pill span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  color: white;
+  font-weight: 600;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.hero-title em { font-style: italic; color: #86efac; }
+.hero-sub {
+  color: rgba(255,255,255,0.65);
+  font-size: 0.88rem;
+  font-weight: 300;
+  margin-bottom: 24px;
+}
+.hero-order-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+}
+.hero-order-chip .label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.hero-order-chip .value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+.hero-order-chip .sep {
+  width: 1px; height: 24px;
+  background: rgba(255,255,255,0.2);
+}
+
+/* ── LAYOUT ── */
+.page-wrap {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 32px 32px 48px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+@media(max-width:860px) {
+  .page-wrap { grid-template-columns: 1fr; padding: 20px 16px 40px; }
+  .topbar { padding: 0 16px; }
+  .hero { padding: 36px 16px 32px; }
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.card-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.logo-icon {
+.card-head-icon {
   width: 32px; height: 32px;
-  background: var(--bark);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-}
-.logo-icon svg { width: 18px; height: 18px; fill: white; }
-.header-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--stone);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-/* ── HERO STRIP ── */
-.hero-strip {
-  background: var(--bark-dark);
-  color: white;
-  padding: 48px 40px;
-  position: relative;
-  overflow: hidden;
-}
-.hero-strip::after {
-  content: '';
-  position: absolute;
-  right: -60px; top: -60px;
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(196,149,106,0.3) 0%, transparent 70%);
-  pointer-events: none;
-}
-.hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
-.hero-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 100px;
-  padding: 4px 14px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--bark-light);
-  margin-bottom: 16px;
-}
-.hero-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: pulse-dot 2s infinite; }
-@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.7)} }
-.hero-title {
-  font-family: 'DM Serif Display', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.1;
-  margin-bottom: 8px;
-}
-.hero-title em { font-style: italic; color: var(--bark-light); }
-.hero-subtitle { color: rgba(255,255,255,0.55); font-size: 0.9rem; font-weight: 300; }
-.order-id-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: var(--radius-sm);
-  padding: 10px 18px;
-  font-size: 0.85rem;
-}
-.order-id-badge strong { font-weight: 600; color: white; font-size: 1rem; }
-.order-id-badge span { color: rgba(255,255,255,0.5); }
-
-/* ── MAIN LAYOUT ── */
-.main-wrap {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 48px 40px;
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 32px;
-}
-@media(max-width:900px) {
-  .main-wrap { grid-template-columns: 1fr; padding: 24px 20px; }
-  .site-header { padding: 16px 20px; }
-  .hero-strip { padding: 32px 20px; }
-}
-
-/* ── CARDS ── */
-.card {
-  background: var(--warm-white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--stone-lighter);
-  overflow: hidden;
-}
-.card-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--stone-lighter);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-header-icon {
-  width: 36px; height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-xs);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.card-header h2 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 1.1rem;
-  color: var(--charcoal);
-  font-weight: 400;
+.card-head h3 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  letter-spacing: -0.01em;
 }
-.card-header p { font-size: 0.78rem; color: var(--stone); margin-top: 1px; }
-.card-body { padding: 24px; }
+.card-head p {
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  margin-top: 1px;
+}
+.card-body { padding: 20px; }
+.col-left { display: flex; flex-direction: column; gap: 20px; }
+.col-right { display: flex; flex-direction: column; gap: 16px; }
 
 /* ── STATUS TIMELINE ── */
-.status-timeline {
+.timeline { display: flex; flex-direction: column; }
+.t-step {
   display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.status-step {
-  display: flex;
-  gap: 16px;
+  gap: 14px;
   position: relative;
 }
-.status-step:not(:last-child)::before {
+.t-step:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 17px;
-  top: 36px;
-  bottom: -4px;
+  left: 15px;
+  top: 32px;
+  bottom: 0;
   width: 2px;
-  background: var(--stone-lighter);
+  background: var(--gray-200);
+  border-radius: 2px;
 }
-.status-step.done::before { background: var(--green-light); }
-.status-step.active::before { background: linear-gradient(var(--green-light), var(--stone-lighter)); }
+.t-step.done::after { background: var(--green-border); }
+.t-step.active::after { background: linear-gradient(to bottom, var(--green-border), var(--gray-200)); }
 
-.step-icon {
-  width: 36px; height: 36px;
+.t-icon {
+  width: 32px; height: 32px;
   border-radius: 50%;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid var(--stone-lighter);
-  background: var(--warm-white);
+  border: 2px solid var(--gray-200);
+  background: var(--white);
+  position: relative;
   z-index: 1;
   margin-top: 2px;
-  transition: all 0.4s ease;
+  transition: all 0.35s;
 }
-.status-step.done .step-icon {
+.t-step.done .t-icon {
   background: var(--green);
   border-color: var(--green);
-  box-shadow: 0 0 0 4px rgba(45,106,79,0.12);
+  box-shadow: 0 0 0 4px var(--green-mid);
 }
-.status-step.active .step-icon {
+.t-step.active .t-icon {
   background: var(--amber);
   border-color: var(--amber);
-  box-shadow: 0 0 0 4px rgba(233,168,76,0.2);
-  animation: pulse-amber 2s infinite;
+  box-shadow: 0 0 0 4px var(--amber-light);
+  animation: pulse-icon 2s ease-in-out infinite;
 }
-@keyframes pulse-amber {
-  0%,100% { box-shadow: 0 0 0 4px rgba(233,168,76,0.2); }
-  50% { box-shadow: 0 0 0 8px rgba(233,168,76,0.08); }
+@keyframes pulse-icon {
+  0%,100%{ box-shadow: 0 0 0 4px var(--amber-light); }
+  50%{ box-shadow: 0 0 0 8px rgba(245,158,11,0.08); }
 }
-.step-icon svg { width: 16px; height: 16px; }
-.status-step.done .step-icon svg { stroke: white; }
-.status-step.active .step-icon svg { stroke: white; }
-.status-step:not(.done):not(.active) .step-icon svg { stroke: var(--stone-light); }
+.t-icon svg { width: 14px; height: 14px; }
+.t-step.done .t-icon svg { stroke: white; }
+.t-step.active .t-icon svg { stroke: white; }
+.t-step:not(.done):not(.active) .t-icon svg { stroke: var(--gray-300); }
 
-.step-content { padding: 4px 0 24px; flex: 1; }
-.step-label {
+.t-content { padding: 4px 0 22px; flex: 1; }
+.t-label {
+  font-size: 0.85rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--charcoal);
+  color: var(--gray-700);
+  line-height: 1.3;
 }
-.status-step:not(.done):not(.active) .step-label { color: var(--stone-light); }
-.step-desc { font-size: 0.78rem; color: var(--stone); margin-top: 3px; font-weight: 300; }
-.step-date { font-size: 0.72rem; color: var(--bark); font-weight: 500; margin-top: 6px; }
+.t-step:not(.done):not(.active) .t-label { color: var(--gray-400); font-weight: 400; }
+.t-desc { font-size: 0.75rem; color: var(--gray-400); margin-top: 3px; line-height: 1.4; }
+.t-step.active .t-desc { color: var(--gray-500); }
+.t-badge {
+  display: inline-block;
+  margin-top: 7px;
+  background: var(--green-light);
+  color: var(--green-text);
+  border: 1px solid var(--green-border);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
 /* ── 3D VIEWER ── */
-.viewer-wrap {
+.viewer-box {
   position: relative;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: linear-gradient(145deg, #F0EDE6 0%, #E8E4DC 100%);
-  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  aspect-ratio: 16/10;
+  border: 1px solid var(--green-border);
 }
-#shelfCanvas3d {
+#c3d {
+  display: block;
   width: 100% !important;
   height: 100% !important;
-  display: block;
 }
-.viewer-badge {
-  position: absolute;
-  bottom: 12px; left: 12px;
-  background: rgba(28,28,26,0.7);
-  backdrop-filter: blur(8px);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 100px;
-  letter-spacing: 0.05em;
-}
-.viewer-loading {
+.viewer-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  background: linear-gradient(145deg, #F0EDE6 0%, #E8E4DC 100%);
+  gap: 10px;
+  background: inherit;
+  transition: opacity 0.4s;
 }
-.viewer-loading.hidden { display: none; }
-.spinner {
-  width: 32px; height: 32px;
-  border: 2px solid var(--stone-lighter);
-  border-top-color: var(--bark);
+.viewer-overlay.gone { opacity: 0; pointer-events: none; }
+.spin-ring {
+  width: 28px; height: 28px;
+  border: 2px solid var(--green-border);
+  border-top-color: var(--green);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.viewer-loading p { font-size: 0.78rem; color: var(--stone); }
-
-/* ── PRODUCT CHIPS ── */
-.product-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 14px;
+.viewer-overlay p { font-size: 0.75rem; color: var(--green-dark); font-weight: 500; }
+.viewer-tag {
+  position: absolute;
+  bottom: 10px; left: 10px;
+  background: rgba(22,101,52,0.75);
+  backdrop-filter: blur(6px);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
 }
+
+/* ── CHIPS ── */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .chip {
-  background: var(--stone-lighter);
-  color: var(--stone);
-  font-size: 0.72rem;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 0.7rem;
   font-weight: 500;
   padding: 4px 10px;
   border-radius: 100px;
-  letter-spacing: 0.02em;
+  border: 1px solid var(--gray-200);
 }
-.chip.accent { background: rgba(139,90,43,0.1); color: var(--bark-dark); }
+.chip.green {
+  background: var(--green-light);
+  color: var(--green-text);
+  border-color: var(--green-border);
+}
 
-/* ── ORDER META ── */
+/* ── META GRID ── */
 .meta-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 16px 12px;
 }
 .meta-item { display: flex; flex-direction: column; gap: 3px; }
-.meta-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone-light); }
-.meta-value { font-size: 0.9rem; font-weight: 500; color: var(--charcoal); }
-.meta-value.price { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--bark-dark); }
-.divider { height: 1px; background: var(--stone-lighter); margin: 20px 0; }
+.meta-lbl {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--gray-400);
+}
+.meta-val {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  line-height: 1.3;
+}
+.meta-val.big {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  color: var(--green-dark);
+  font-weight: 600;
+}
+.divider { height: 1px; background: var(--gray-100); margin: 16px 0; }
 
 /* ── STATUS BADGE ── */
-.status-badge {
+.sbadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 4px 11px;
   border-radius: 100px;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
 }
-.status-badge.nowe { background: rgba(233,168,76,0.15); color: #A67820; }
-.status-badge.realizacja { background: rgba(45,106,79,0.12); color: var(--green); }
-.status-badge.wyslane { background: rgba(45,106,79,0.2); color: var(--green); }
-.status-badge.dostarczone { background: rgba(45,106,79,0.3); color: var(--bark-dark); }
-.status-badge .sdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.sbadge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.sbadge.s0 { background: var(--amber-light); color: #92400e; }
+.sbadge.s1 { background: #eff6ff; color: #1d4ed8; }
+.sbadge.s2 { background: var(--green-mid); color: var(--green-text); }
+.sbadge.s3 { background: var(--green-light); color: var(--green-deeper); }
 
-/* ── TRACKING BOX ── */
-.tracking-box {
-  background: var(--cream);
-  border: 1px solid var(--stone-lighter);
-  border-radius: var(--radius-sm);
-  padding: 16px;
+/* ── TRACKING CARD ── */
+.track-link {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 14px 16px;
+  background: var(--green-light);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  color: inherit;
-  transition: all 0.2s;
-  margin-top: 16px;
+  transition: all 0.18s;
+  margin-top: 4px;
 }
-.tracking-box:hover { border-color: var(--bark-light); box-shadow: var(--shadow-sm); }
-.tracking-box .tk-icon {
-  width: 40px; height: 40px;
-  background: var(--bark);
-  border-radius: 10px;
+.track-link:hover { background: var(--green-mid); box-shadow: var(--shadow-sm); }
+.track-icon {
+  width: 38px; height: 38px;
+  background: var(--green);
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.tracking-box .tk-icon svg { width: 20px; height: 20px; stroke: white; }
-.tracking-box .tk-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--stone); }
-.tracking-box .tk-value { font-size: 0.95rem; font-weight: 600; color: var(--charcoal); margin-top: 2px; }
-.tracking-box .tk-arrow { margin-left: auto; color: var(--stone-light); }
+.track-icon svg { width: 18px; height: 18px; stroke: white; }
+.track-lbl { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--green-dark); }
+.track-num { font-size: 0.9rem; font-weight: 700; color: var(--green-text); margin-top: 2px; }
+.track-arrow { margin-left: auto; color: var(--green); font-size: 1.1rem; }
 
-/* ── CONTACT STRIP ── */
-.contact-strip {
-  background: var(--bark-dark);
-  color: white;
+/* ── CONTACT CARD ── */
+.contact-card {
+  background: linear-gradient(135deg, var(--green-deeper), var(--green-dark));
   border-radius: var(--radius-sm);
-  padding: 20px;
+  padding: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 16px;
   flex-wrap: wrap;
 }
-.contact-strip p { font-size: 0.82rem; color: rgba(255,255,255,0.7); }
-.contact-strip strong { display: block; font-size: 0.95rem; color: white; }
+.contact-card p { font-size: 0.78rem; color: rgba(255,255,255,0.65); }
+.contact-card strong { display: block; font-size: 0.88rem; color: white; margin-bottom: 2px; }
 .contact-btn {
-  background: var(--bark-light);
-  color: var(--bark-dark);
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 10px 20px;
-  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: var(--radius-xs);
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.18s;
+  letter-spacing: 0.02em;
 }
-.contact-btn:hover { background: white; }
+.contact-btn:hover { background: rgba(255,255,255,0.25); }
 
-/* ── ERROR / LOADING STATES ── */
-.state-wrap {
-  min-height: 60vh;
+/* ── STATES ── */
+.state-center {
+  min-height: 55vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 48px 20px;
-  max-width: 440px;
+  padding: 48px 24px;
+  max-width: 400px;
   margin: 0 auto;
 }
-.state-icon {
-  width: 72px; height: 72px;
-  border-radius: 20px;
+.state-icon-wrap {
+  width: 68px; height: 68px;
+  border-radius: 18px;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
-.state-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; margin-bottom: 10px; }
-.state-desc { font-size: 0.9rem; color: var(--stone); line-height: 1.6; font-weight: 300; }
+.state-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 10px;
+}
+.state-desc { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
 
 /* ── ANIMATIONS ── */
-.fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
-.fade-in-up { animation: fadeInUp 0.7s ease forwards; opacity: 0; }
-.fade-in-up:nth-child(2) { animation-delay: 0.1s; }
-.fade-in-up:nth-child(3) { animation-delay: 0.2s; }
-.fade-in-up:nth-child(4) { animation-delay: 0.3s; }
-@keyframes fadeIn { to { opacity: 1; } }
-@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } from { opacity: 0; transform: translateY(16px); } }
+.fade-up { animation: fadeUp 0.55s ease both; }
+.fade-up:nth-child(2) { animation-delay: 0.08s; }
+.fade-up:nth-child(3) { animation-delay: 0.16s; }
+.fade-up:nth-child(4) { animation-delay: 0.24s; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── FOOTER ── */
-.site-footer {
+footer {
   text-align: center;
-  padding: 32px;
-  color: var(--stone-light);
-  font-size: 0.75rem;
-  border-top: 1px solid var(--stone-lighter);
-  margin-top: 24px;
+  padding: 28px;
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  border-top: 1px solid var(--gray-200);
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="site-header">
+<!-- TOPBAR -->
+<header class="topbar">
   <a href="/" class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="2" rx="1"/><rect x="2" y="12" width="20" height="2" rx="1"/><rect x="2" y="18" width="20" height="2" rx="1"/><rect x="4" y="4" width="2" height="16" rx="1"/><rect x="18" y="4" width="2" height="16" rx="1"/></svg>
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="2.5" rx="1.2"/><rect x="2" y="11" width="20" height="2.5" rx="1.2"/><rect x="2" y="17" width="20" height="2.5" rx="1.2"/><rect x="3.5" y="3" width="2" height="18" rx="1"/><rect x="18.5" y="3" width="2" height="18" rx="1"/></svg>
     </div>
-    Konfigurator Półek
+    <span class="logo-name">Konfigurator<span>Półek</span></span>
   </a>
-  <span class="header-label">Śledzenie zamówienia</span>
+  <span class="topbar-right">Śledzenie zamówienia</span>
 </header>
 
-<!-- DYNAMIC CONTENT -->
-<div id="appRoot"></div>
+<!-- ROOT -->
+<div id="root"></div>
 
-<footer class="site-footer">
-  © 2025 Konfigurator Półek · Wszystkie prawa zastrzeżone
-</footer>
+<footer>© 2025 KonfiguratorPółek · Wszystkie prawa zastrzeżone</footer>
 
 <script>
-// ── KONFIGURACJA ──
-const PROXY_URL = 'https://baselinker-proxy.007lukasz-m.workers.dev';
+const PROXY = 'https://baselinker-proxy.007lukasz-m.workers.dev';
 
-// ── MAPOWANIE KOLORÓW I TYPÓW ──
-const codeToValue = {
-  type: { s: 'standing', h: 'hanging', m: 'mug_shelf', M: 'modular' },
-  typeLabel: { s: 'Stojąca', h: 'Wisząca', m: 'Na kubki', M: 'Modułowa' },
-  color: { '0': '#8B5A2B', '1': '#FFFFFF', '2': '#000000' },
-  colorLabel: { '0': 'Dąb', '1': 'Biała', '2': 'Czarna' }
+const COLOR_MAP = {
+  hex:   { '0':'#8B5A2B', '1':'#FFFFFF', '2':'#000000' },
+  label: { '0':'Dąb',     '1':'Biała',   '2':'Czarna'  }
 };
+const TYPE_LABEL = { s:'Stojąca', h:'Wisząca', m:'Na kubki', M:'Modułowa' };
 
-// ── STATUS MAPPING ──
-const STATUS_STEPS = [
-  { key: 'nowe',       label: 'Zamówienie przyjęte',   desc: 'Otrzymaliśmy Twoje zamówienie i weryfikujemy szczegóły.', icon: 'check' },
-  { key: 'realizacja', label: 'W produkcji',            desc: 'Twoja półka jest aktualnie wytwarzana w naszym warsztacie.', icon: 'tool' },
-  { key: 'wyslane',    label: 'Wysłane',                desc: 'Paczka jest w drodze do Ciebie.', icon: 'truck' },
-  { key: 'dostarczone',label: 'Dostarczone',            desc: 'Półka dotarła do celu. Ciesz się!', icon: 'home' },
-];
-
-const ICONS = {
+const SVG = {
   check: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
   tool:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`,
   truck: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
   home:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
   box:   `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
-  alert: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>`,
+  info:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
   search:`<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
 };
 
-// ── PARSE ORDER CODE ──
-function parseOrderCode(code) {
+const STEPS = [
+  { label:'Zamówienie przyjęte',  desc:'Otrzymaliśmy Twoje zamówienie i weryfikujemy szczegóły.',        icon:'check' },
+  { label:'W produkcji',          desc:'Twoja półka jest wytwarzana w naszym warsztacie.',                icon:'tool'  },
+  { label:'Wysłane do Ciebie',    desc:'Paczka jest w drodze — kurier dostarczy ją wkrótce.',            icon:'truck' },
+  { label:'Dostarczone',          desc:'Półka dotarła na miejsce. Ciesz się nowym meblowaniem!',         icon:'home'  },
+];
+
+function parseCode(code) {
   if (!code) return null;
   code = code.trim();
   try {
-    // Modular: M-W44-H80-C20-D10-01-s
     if (code.startsWith('M-')) {
-      const parts = code.split('-');
-      return {
-        type: 'modular',
-        typeLabel: 'Modułowa',
-        width: parts[1]?.replace('W',''),
-        height: parts[2]?.replace('H',''),
-        connectWidth: parts[3]?.replace('C',''),
-        depth: parts[4]?.replace('D',''),
-        sideColorHex: codeToValue.color[parts[5]?.[0]] || '#8B5A2B',
-        shelfColorHex: codeToValue.color[parts[5]?.[1]] || '#FFFFFF',
-        sideColorLabel: codeToValue.colorLabel[parts[5]?.[0]] || 'Dąb',
-        shelfColorLabel: codeToValue.colorLabel[parts[5]?.[1]] || 'Biała',
-        options: parts[6] || 's'
-      };
+      const p = code.split('-');
+      const col = p[5] || '01';
+      return { type:'modular', typeLabel:'Modułowa',
+        width: p[1]?.replace('W',''), height: p[2]?.replace('H',''),
+        depth: p[4]?.replace('D',''), shelfCount: null,
+        sideHex: COLOR_MAP.hex[col[0]]||'#8B5A2B', shelfHex: COLOR_MAP.hex[col[1]]||'#FFFFFF',
+        sideLbl: COLOR_MAP.label[col[0]]||'Dąb',   shelfLbl: COLOR_MAP.label[col[1]]||'Biała' };
     }
-    // Standard: s/h/m-W80-H100-D15-N3-01[-options]
-    const parts = code.split('-');
-    const typeChar = parts[0];
-    const colorPart = parts.find(p => /^[012]{2}$/.test(p)) || '01';
-    const wPart = parts.find(p => p.startsWith('W'))?.replace('W','');
-    const hPart = parts.find(p => p.startsWith('H'))?.replace('H','');
-    const dPart = parts.find(p => p.startsWith('D'))?.replace('D','');
-    const nPart = parts.find(p => p.startsWith('N'))?.replace('N','');
+    const p = code.split('-');
+    const typeChar = p[0];
+    const col = p.find(x=>/^[012]{2}$/.test(x)) || '01';
     return {
-      type: codeToValue.type[typeChar] || 'standing',
-      typeLabel: codeToValue.typeLabel[typeChar] || 'Stojąca',
-      width: wPart,
-      height: hPart,
-      depth: dPart,
-      shelfCount: nPart,
-      sideColorHex: codeToValue.color[colorPart[0]] || '#8B5A2B',
-      shelfColorHex: codeToValue.color[colorPart[1]] || '#FFFFFF',
-      sideColorLabel: codeToValue.colorLabel[colorPart[0]] || 'Dąb',
-      shelfColorLabel: codeToValue.colorLabel[colorPart[1]] || 'Biała',
+      type: typeChar, typeLabel: TYPE_LABEL[typeChar]||'Stojąca',
+      width:  p.find(x=>x.startsWith('W'))?.replace('W',''),
+      height: p.find(x=>x.startsWith('H'))?.replace('H',''),
+      depth:  p.find(x=>x.startsWith('D'))?.replace('D',''),
+      shelfCount: p.find(x=>x.startsWith('N'))?.replace('N',''),
+      sideHex: COLOR_MAP.hex[col[0]]||'#8B5A2B', shelfHex: COLOR_MAP.hex[col[1]]||'#FFFFFF',
+      sideLbl: COLOR_MAP.label[col[0]]||'Dąb',   shelfLbl: COLOR_MAP.label[col[1]]||'Biała'
     };
   } catch(e) { return null; }
 }
 
-// ── 3D SHELF RENDERER ──
-function render3DShelf(canvasEl, config) {
-  if (!config) return;
-  const W = parseFloat(config.width) || 80;
-  const H = parseFloat(config.height) || 100;
-  const D = parseFloat(config.depth) || 15;
-  const N = parseInt(config.shelfCount) || 3;
-  const sideColor = config.sideColorHex || '#8B5A2B';
-  const shelfColor = config.shelfColorHex || '#FFFFFF';
-  const THICK = 1.8;
+function getStep(name) {
+  const n = (name||'').toLowerCase();
+  if (n.includes('dostarczon')||n.includes('odebran')) return 3;
+  if (n.includes('wysłan')||n.includes('wyslano')||n.includes('shipped')) return 2;
+  if (n.includes('realizac')||n.includes('produkcj')||n.includes('processing')) return 1;
+  return 0;
+}
 
-  const scene = new THREE.Scene();
-  scene.background = null;
+function init3D(canvas, cfg) {
+  const W  = parseFloat(cfg.width)||80;
+  const H  = parseFloat(cfg.height)||100;
+  const D  = parseFloat(cfg.depth)||15;
+  const N  = parseInt(cfg.shelfCount)||3;
+  const TH = 1.8;
+  const SC = 0.048;
 
-  const aspect = canvasEl.clientWidth / canvasEl.clientHeight;
-  const camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 1000);
-
-  const scale = 0.055;
-  camera.position.set(W * scale * 1.8, H * scale * 0.6, D * scale * 5);
-  camera.lookAt(0, H * scale * 0.2, 0);
-
-  const renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
-  renderer.setSize(canvasEl.clientWidth, canvasEl.clientHeight);
+  const scene    = new THREE.Scene();
+  const w = canvas.offsetWidth, h = canvas.offsetHeight;
+  const camera   = new THREE.PerspectiveCamera(32, w/h, 0.1, 500);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  // Lights
-  const ambient = new THREE.AmbientLight(0xffffff, 0.7);
-  scene.add(ambient);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-  dirLight.position.set(5, 10, 8);
-  dirLight.castShadow = true;
-  scene.add(dirLight);
-  const fillLight = new THREE.DirectionalLight(0xfff8f0, 0.4);
-  fillLight.position.set(-3, 2, -4);
-  scene.add(fillLight);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.95);
+  dir.position.set(6, 10, 8); dir.castShadow = true;
+  scene.add(dir);
+  const fill = new THREE.DirectionalLight(0xf0fdf4, 0.35);
+  fill.position.set(-4, 3, -5);
+  scene.add(fill);
 
-  const sideMat = new THREE.MeshStandardMaterial({ color: sideColor, roughness: 0.6, metalness: 0.05 });
-  const shelfMat = new THREE.MeshStandardMaterial({ color: shelfColor, roughness: 0.55, metalness: 0.05 });
+  const wS=W*SC, hS=H*SC, dS=D*SC, tS=TH*SC;
+  const sideMat  = new THREE.MeshStandardMaterial({ color:cfg.sideHex,  roughness:0.55, metalness:0.04 });
+  const shelfMat = new THREE.MeshStandardMaterial({ color:cfg.shelfHex, roughness:0.50, metalness:0.04 });
 
-  const wS = W * scale; const hS = H * scale; const dS = D * scale; const tS = THICK * scale;
-  const group = new THREE.Group();
+  const grp = new THREE.Group();
+  const sideGeo  = new THREE.BoxGeometry(tS, hS, dS);
+  const addSide = (x) => { const m=new THREE.Mesh(sideGeo,sideMat); m.position.set(x,hS/2,0); m.castShadow=true; grp.add(m); };
+  addSide(-wS/2+tS/2); addSide(wS/2-tS/2);
 
-  // Left side
-  const sideGeo = new THREE.BoxGeometry(tS, hS, dS);
-  const leftSide = new THREE.Mesh(sideGeo, sideMat);
-  leftSide.position.set(-wS/2 + tS/2, hS/2, 0);
-  leftSide.castShadow = true;
-  group.add(leftSide);
-
-  // Right side
-  const rightSide = new THREE.Mesh(sideGeo, sideMat);
-  rightSide.position.set(wS/2 - tS/2, hS/2, 0);
-  rightSide.castShadow = true;
-  group.add(rightSide);
-
-  // Inner width
-  const innerW = wS - 2 * tS;
+  const innerW   = wS - 2*tS;
   const shelfGeo = new THREE.BoxGeometry(innerW, tS, dS);
+  const addShelf = (y) => { const m=new THREE.Mesh(shelfGeo,shelfMat); m.position.set(0,y,0); m.castShadow=true; m.receiveShadow=true; grp.add(m); };
+  addShelf(tS/2); addShelf(hS-tS/2);
+  const avail=hS-2*tS, gap=N+1;
+  for(let i=1;i<=N;i++) addShelf(tS + avail/gap*i);
 
-  // Top + bottom shelves
-  const topShelf = new THREE.Mesh(shelfGeo, shelfMat);
-  topShelf.position.set(0, hS - tS/2, 0);
-  topShelf.castShadow = true; topShelf.receiveShadow = true;
-  group.add(topShelf);
+  grp.position.y = -hS/2;
+  scene.add(grp);
 
-  const bottomShelf = new THREE.Mesh(shelfGeo, shelfMat);
-  bottomShelf.position.set(0, tS/2, 0);
-  bottomShelf.castShadow = true; bottomShelf.receiveShadow = true;
-  group.add(bottomShelf);
+  camera.position.set(wS*1.9, hS*0.55, dS*6);
+  camera.lookAt(0, hS*0.15, 0);
 
-  // Inner shelves
-  const availH = hS - 2 * tS;
-  const gaps = N + 1;
-  for (let i = 1; i <= N; i++) {
-    const y = tS + (availH / gaps) * i;
-    const innerShelf = new THREE.Mesh(shelfGeo, shelfMat);
-    innerShelf.position.set(0, y, 0);
-    innerShelf.castShadow = true; innerShelf.receiveShadow = true;
-    group.add(innerShelf);
-  }
-
-  group.position.y = -hS / 2;
-  scene.add(group);
-
-  // Animate
-  let animId;
-  let t = 0;
-  function animate() {
-    animId = requestAnimationFrame(animate);
-    t += 0.008;
-    group.rotation.y = Math.sin(t) * 0.25 + 0.3;
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  return () => cancelAnimationFrame(animId);
+  let t=0, raf;
+  (function loop(){ raf=requestAnimationFrame(loop); t+=0.007; grp.rotation.y=Math.sin(t)*0.22+0.25; renderer.render(scene,camera); })();
+  return ()=>cancelAnimationFrame(raf);
 }
 
-// ── DETERMINE STATUS STEP ──
-function getStatusStep(statusName) {
-  const n = (statusName || '').toLowerCase();
-  if (n.includes('dostarczon') || n.includes('odebran')) return 3;
-  if (n.includes('wysłan') || n.includes('wyslano') || n.includes('transit') || n.includes('shipped')) return 2;
-  if (n.includes('realizac') || n.includes('produkcj') || n.includes('processing') || n.includes('w trakcie')) return 1;
-  return 0; // nowe / domyślny
-}
+function renderPage(order, statusName, tracking) {
+  const comments = order.user_comments||'';
+  const codeM = comments.match(/Kod:\s*([^\n\r]+)/);
+  const cfg = parseCode(codeM?.[1]);
+  const step = getStep(statusName);
+  const total = (order.products||[]).reduce((s,p)=>s+parseFloat(p.price_brutto||0)*parseInt(p.quantity||1),0);
+  const dateStr = new Date(order.date_add*1000).toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'});
 
-// ── RENDER MAIN UI ──
-function renderOrder(order, statusName, trackingNum) {
-  const root = document.getElementById('appRoot');
-
-  // Parse config from user_comments
-  const comments = order.user_comments || '';
-  const codeMatch = comments.match(/Kod:\s*([^\n]+)/);
-  const orderCode = codeMatch ? codeMatch[1].trim() : null;
-  const config = parseOrderCode(orderCode);
-
-  const step = getStatusStep(statusName);
-  const isShipped = step >= 2;
-
-  // Extract price
-  const total = order.products?.reduce((s, p) => s + (parseFloat(p.price_brutto) * parseInt(p.quantity)), 0) || 0;
-
-  root.innerHTML = `
-    <div class="hero-strip fade-in">
+  document.getElementById('root').innerHTML = `
+    <div class="hero">
       <div class="hero-inner">
-        <div class="hero-tag"><span class="dot"></span>Śledzenie na żywo</div>
+        <div class="hero-pill"><span class="live-dot"></span><span>Śledzenie na żywo</span></div>
         <h1 class="hero-title">Twoje zamówienie<br><em>jest u nas</em></h1>
-        <p class="hero-subtitle">Aktualne informacje prosto z naszego systemu</p>
-        <div class="order-id-badge">
-          <span>Numer zamówienia</span>
-          <strong>#${order.order_id}</strong>
+        <p class="hero-sub">Aktualne informacje prosto z systemu produkcji</p>
+        <div class="hero-order-chip">
+          <div><div class="label">Numer zamówienia</div><div class="value">#${order.order_id}</div></div>
+          <div class="sep"></div>
+          <div><div class="label">Data</div><div class="value" style="font-size:.85rem;">${dateStr}</div></div>
         </div>
       </div>
     </div>
 
-    <div class="main-wrap">
-      <!-- LEWA KOLUMNA -->
-      <div style="display:flex;flex-direction:column;gap:24px;">
+    <div class="page-wrap">
+      <div class="col-left">
 
         <!-- STATUS -->
-        <div class="card fade-in-up">
-          <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(45,106,79,0.1);">
-              ${ICONS.check.replace('stroke="currentColor"','stroke="#2D6A4F"')}
+        <div class="card fade-up">
+          <div class="card-head">
+            <div class="card-head-icon" style="background:#f0fdf4;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <div>
-              <h2>Status zamówienia</h2>
-              <p>Aktualizowany w czasie rzeczywistym</p>
-            </div>
+            <div><h3>Status zamówienia</h3><p>Aktualizowany w czasie rzeczywistym</p></div>
           </div>
           <div class="card-body">
-            <div class="status-timeline">
-              ${STATUS_STEPS.map((s, i) => `
-                <div class="status-step ${i < step ? 'done' : i === step ? 'active' : ''}">
-                  <div class="step-icon">${ICONS[s.icon]}</div>
-                  <div class="step-content">
-                    <div class="step-label">${s.label}</div>
-                    <div class="step-desc">${i === step ? s.desc : (i < step ? 'Ukończono' : 'Oczekuje')}</div>
-                    ${i === step ? `<div class="step-date">Aktualny status: ${statusName}</div>` : ''}
+            <div class="timeline">
+              ${STEPS.map((s,i)=>`
+                <div class="t-step ${i<step?'done':i===step?'active':''}">
+                  <div class="t-icon">${SVG[s.icon]}</div>
+                  <div class="t-content">
+                    <div class="t-label">${s.label}</div>
+                    <div class="t-desc">${i===step ? s.desc : (i<step?'Ukończono':'Oczekuje')}</div>
+                    ${i===step?`<span class="t-badge">${statusName}</span>`:''}
                   </div>
                 </div>
               `).join('')}
@@ -700,125 +697,110 @@ function renderOrder(order, statusName, trackingNum) {
           </div>
         </div>
 
-        <!-- 3D PODGLĄD -->
-        ${config ? `
-        <div class="card fade-in-up">
-          <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(139,90,43,0.1);">
-              ${ICONS.box.replace('stroke="currentColor"','stroke="#8B5A2B"')}
+        <!-- 3D -->
+        ${cfg?`
+        <div class="card fade-up">
+          <div class="card-head">
+            <div class="card-head-icon" style="background:#f0fdf4;">
+              ${SVG.box.replace('stroke="currentColor"','stroke="#16a34a"')}
             </div>
-            <div>
-              <h2>Twoja półka — podgląd 3D</h2>
-              <p>Wygenerowany na podstawie konfiguracji</p>
-            </div>
+            <div><h3>Podgląd Twojej półki — 3D</h3><p>Wygenerowany na podstawie konfiguracji zamówienia</p></div>
           </div>
           <div class="card-body">
-            <div class="viewer-wrap">
-              <div class="viewer-loading" id="viewerLoading">
-                <div class="spinner"></div>
+            <div class="viewer-box">
+              <canvas id="c3d"></canvas>
+              <div class="viewer-overlay" id="vOverlay">
+                <div class="spin-ring"></div>
                 <p>Renderuję podgląd…</p>
               </div>
-              <canvas id="shelfCanvas3d"></canvas>
-              <div class="viewer-badge">Widok 3D · obrót automatyczny</div>
+              <div class="viewer-tag">🔄 Widok 3D · obrót automatyczny</div>
             </div>
-            <div class="product-chips">
-              <span class="chip accent">${config.typeLabel}</span>
-              ${config.width ? `<span class="chip">szer. ${config.width} cm</span>` : ''}
-              ${config.height ? `<span class="chip">wys. ${config.height} cm</span>` : ''}
-              ${config.depth ? `<span class="chip">gł. ${config.depth} cm</span>` : ''}
-              ${config.shelfCount ? `<span class="chip">${config.shelfCount} półek wewn.</span>` : ''}
-              <span class="chip">Boki: ${config.sideColorLabel}</span>
-              <span class="chip">Półki: ${config.shelfColorLabel}</span>
+            <div class="chips">
+              <span class="chip green">${cfg.typeLabel}</span>
+              ${cfg.width?`<span class="chip">szer. ${cfg.width} cm</span>`:''}
+              ${cfg.height?`<span class="chip">wys. ${cfg.height} cm</span>`:''}
+              ${cfg.depth?`<span class="chip">gł. ${cfg.depth} cm</span>`:''}
+              ${cfg.shelfCount?`<span class="chip">${cfg.shelfCount} półek wewn.</span>`:''}
+              <span class="chip">Boki: ${cfg.sideLbl}</span>
+              <span class="chip">Półki: ${cfg.shelfLbl}</span>
             </div>
           </div>
         </div>
-        ` : ''}
+        `:''}
 
       </div>
 
-      <!-- PRAWA KOLUMNA -->
-      <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="col-right">
 
-        <!-- SZCZEGÓŁY -->
-        <div class="card fade-in-up">
-          <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(28,28,26,0.06);">
-              ${ICONS.box}
-            </div>
-            <div><h2>Szczegóły</h2></div>
+        <!-- DETAILS -->
+        <div class="card fade-up">
+          <div class="card-head">
+            <div class="card-head-icon" style="background:#f3f4f6;">${SVG.info}</div>
+            <div><h3>Szczegóły zamówienia</h3></div>
           </div>
           <div class="card-body">
             <div class="meta-grid">
-              <div class="meta-item">
-                <span class="meta-label">Status</span>
-                <span class="status-badge ${['nowe','realizacja','wyslane','dostarczone'][step]}">
-                  <span class="sdot"></span>${statusName}
-                </span>
+              <div class="meta-item" style="grid-column:1/-1;">
+                <span class="meta-lbl">Status</span>
+                <span class="sbadge s${step}"><span class="dot"></span>${statusName}</span>
               </div>
               <div class="meta-item">
-                <span class="meta-label">Data zamówienia</span>
-                <span class="meta-value">${new Date(order.date_add * 1000).toLocaleDateString('pl-PL', {day:'numeric',month:'long',year:'numeric'})}</span>
+                <span class="meta-lbl">Data zamówienia</span>
+                <span class="meta-val">${dateStr}</span>
               </div>
               <div class="meta-item">
-                <span class="meta-label">Dostawa</span>
-                <span class="meta-value">${order.delivery_method || 'Kurier'}</span>
+                <span class="meta-lbl">Dostawa</span>
+                <span class="meta-val">${order.delivery_method||'Kurier'}</span>
               </div>
               <div class="meta-item">
-                <span class="meta-label">Płatność</span>
-                <span class="meta-value">${order.payment_method || 'Przelew'}</span>
+                <span class="meta-lbl">Płatność</span>
+                <span class="meta-val">${order.payment_method||'Przelew'}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-lbl">Łącznie</span>
+                <span class="meta-val big">${total.toFixed(2)} zł</span>
               </div>
             </div>
+            ${order.delivery_fullname?`
             <div class="divider"></div>
             <div class="meta-item">
-              <span class="meta-label">Łącznie do zapłaty</span>
-              <span class="meta-value price">${total.toFixed(2)} zł</span>
-            </div>
-            ${order.delivery_fullname ? `
-            <div class="divider"></div>
-            <div class="meta-item">
-              <span class="meta-label">Adres dostawy</span>
-              <span class="meta-value">${order.delivery_fullname}</span>
-              <span class="meta-value" style="font-weight:300;font-size:0.82rem;color:var(--stone);margin-top:2px;">${order.delivery_address || ''}, ${order.delivery_postcode || ''} ${order.delivery_city || ''}</span>
-            </div>
-            ` : ''}
+              <span class="meta-lbl">Adres dostawy</span>
+              <span class="meta-val">${order.delivery_fullname}</span>
+              <span class="meta-val" style="font-weight:400;font-size:.78rem;color:var(--gray-400);margin-top:3px;">${order.delivery_address||''}, ${order.delivery_postcode||''} ${order.delivery_city||''}</span>
+            </div>`:''}
           </div>
         </div>
 
-        <!-- ŚLEDZENIE PACZKI -->
-        ${trackingNum ? `
-        <div class="card fade-in-up">
-          <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(139,90,43,0.1);">
-              ${ICONS.truck.replace('stroke="currentColor"','stroke="#8B5A2B"')}
-            </div>
-            <div><h2>Paczka w drodze</h2></div>
+        <!-- TRACKING -->
+        ${tracking?`
+        <div class="card fade-up">
+          <div class="card-head">
+            <div class="card-head-icon" style="background:#f0fdf4;">${SVG.truck.replace('stroke="currentColor"','stroke="#16a34a"')}</div>
+            <div><h3>Paczka w drodze</h3></div>
           </div>
           <div class="card-body">
-            <a href="https://www.dhl.com/pl-pl/home/sledzenie/sledzenie-przesylek.html?submit=1&tracking-id=${trackingNum}" target="_blank" class="tracking-box">
-              <div class="tk-icon">${ICONS.truck}</div>
+            <a href="https://www.dhl.com/pl-pl/home/sledzenie.html?tracking-id=${tracking}" target="_blank" class="track-link">
+              <div class="track-icon">${SVG.truck}</div>
               <div>
-                <div class="tk-label">Numer listu przewozowego</div>
-                <div class="tk-value">${trackingNum}</div>
+                <div class="track-lbl">List przewozowy</div>
+                <div class="track-num">${tracking}</div>
               </div>
-              <div class="tk-arrow">→</div>
+              <div class="track-arrow">→</div>
             </a>
           </div>
-        </div>
-        ` : ''}
+        </div>`:''}
 
-        <!-- KONTAKT -->
-        <div class="card fade-in-up">
-          <div class="card-header">
-            <div class="card-header-icon" style="background:rgba(233,168,76,0.15);">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#A67820" stroke-width="2" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-            </div>
-            <div><h2>Masz pytanie?</h2></div>
+        <!-- CONTACT -->
+        <div class="card fade-up">
+          <div class="card-head">
+            <div class="card-head-icon" style="background:#f0fdf4;">${SVG.phone.replace('stroke="currentColor"','stroke="#16a34a"')}</div>
+            <div><h3>Potrzebujesz pomocy?</h3></div>
           </div>
           <div class="card-body">
-            <div class="contact-strip">
+            <div class="contact-card">
               <div>
-                <p>Jesteśmy do Twojej dyspozycji</p>
-                <strong>Odpiszemy w ciągu 24h</strong>
+                <strong>Jesteśmy do dyspozycji</strong>
+                <p>Odpiszemy w ciągu 24 godzin</p>
               </div>
               <a href="mailto:kontakt@polki.pl" class="contact-btn">Napisz do nas</a>
             </div>
@@ -829,97 +811,75 @@ function renderOrder(order, statusName, trackingNum) {
     </div>
   `;
 
-  // Init 3D
-  if (config) {
-    setTimeout(() => {
-      const canvas = document.getElementById('shelfCanvas3d');
-      const loading = document.getElementById('viewerLoading');
-      if (canvas) {
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-        render3DShelf(canvas, config);
-        if (loading) loading.classList.add('hidden');
-      }
-    }, 300);
+  // Init 3D after DOM paint
+  if (cfg) {
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        const canvas = document.getElementById('c3d');
+        if (!canvas) return;
+        canvas.width  = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        try {
+          init3D(canvas, cfg);
+          setTimeout(()=>{
+            const ov = document.getElementById('vOverlay');
+            if (ov) ov.classList.add('gone');
+          }, 400);
+        } catch(e) { console.error('3D error:', e); }
+      });
+    });
   }
 }
 
-// ── RENDER ERROR ──
-function renderError(title, desc) {
-  document.getElementById('appRoot').innerHTML = `
-    <div class="state-wrap fade-in">
-      <div class="state-icon" style="background:rgba(192,57,43,0.1);">
-        ${ICONS.alert.replace('stroke="currentColor"','stroke="#C0392B"')}
+function renderLoading() {
+  document.getElementById('root').innerHTML = `
+    <div class="state-center">
+      <div class="spin-ring" style="width:40px;height:40px;margin-bottom:20px;"></div>
+      <h2 class="state-title" style="font-size:1.4rem;">Ładuję zamówienie…</h2>
+      <p class="state-desc">Pobieramy aktualne dane z systemu</p>
+    </div>`;
+}
+
+function renderError(title, desc, icon='alert', color='#dc2626', bg='#fef2f2') {
+  document.getElementById('root').innerHTML = `
+    <div class="state-center">
+      <div class="state-icon-wrap" style="background:${bg};">
+        ${SVG[icon].replace('stroke="currentColor"',`stroke="${color}"`)}
       </div>
       <h2 class="state-title">${title}</h2>
       <p class="state-desc">${desc}</p>
-    </div>
-  `;
+    </div>`;
 }
 
-// ── RENDER LOADING ──
-function renderLoading() {
-  document.getElementById('appRoot').innerHTML = `
-    <div class="state-wrap">
-      <div class="spinner" style="width:48px;height:48px;margin-bottom:24px;"></div>
-      <h2 class="state-title" style="font-size:1.4rem;">Ładuję zamówienie…</h2>
-      <p class="state-desc">Pobieramy aktualne dane z systemu</p>
-    </div>
-  `;
-}
-
-// ── MAIN ──
 async function main() {
   renderLoading();
-
-  // Pobierz ID z URL: ?id=12345
-  const params = new URLSearchParams(window.location.search);
-  const orderId = params.get('id');
-
-  if (!orderId) {
-    renderError('Brak numeru zamówienia', 'Sprawdź link który otrzymałeś w wiadomości e-mail. Powinien zawierać numer Twojego zamówienia.');
-    return;
-  }
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { renderError('Brak numeru zamówienia','Sprawdź link z e-maila — powinien zawierać numer zamówienia.','search','#6b7280','#f3f4f6'); return; }
 
   try {
-    // Pobierz zamówienie z BaseLinker
-    const res = await fetch(PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        method: 'getOrders',
-        parameters: { order_id: parseInt(orderId) }
-      })
-    });
-    const data = await res.json();
+    const [oRes, sRes] = await Promise.all([
+      fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ method:'getOrders', parameters:{ order_id: parseInt(id) } }) }),
+      fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ method:'getOrderStatusList', parameters:{} }) })
+    ]);
+    const [oData, sData] = await Promise.all([oRes.json(), sRes.json()]);
 
-    if (data.status !== 'SUCCESS' || !data.orders?.length) {
-      renderError('Nie znaleziono zamówienia', `Zamówienie #${orderId} nie istnieje lub nie mamy do niego dostępu. Sprawdź poprawność linku.`);
-      return;
+    if (oData.status !== 'SUCCESS' || !oData.orders?.length) {
+      renderError(`Zamówienie #${id} nie znalezione`, 'Sprawdź poprawność linku lub skontaktuj się z nami.'); return;
     }
 
-    const order = data.orders[0];
-
-    // Pobierz listę statusów
+    const order = oData.orders[0];
     let statusName = 'Nowe zamówienia';
-    let trackingNum = order.delivery_package_nr || null;
-    try {
-      const sRes = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ method: 'getOrderStatusList', parameters: {} })
-      });
-      const sData = await sRes.json();
-      if (sData.status === 'SUCCESS') {
-        const found = sData.statuses?.find(s => s.id == order.order_status_id);
-        if (found) statusName = found.name;
-      }
-    } catch(e) {}
-
-    renderOrder(order, statusName, trackingNum);
+    if (sData.status === 'SUCCESS') {
+      const found = sData.statuses?.find(s => s.id == order.order_status_id);
+      if (found) statusName = found.name;
+    }
+    const tracking = order.delivery_package_nr || null;
+    renderPage(order, statusName, tracking);
 
   } catch(e) {
-    renderError('Błąd połączenia', 'Nie udało się pobrać danych zamówienia. Spróbuj odświeżyć stronę za chwilę.');
+    renderError('Błąd połączenia', 'Nie udało się pobrać danych. Odśwież stronę za chwilę.');
   }
 }
 
