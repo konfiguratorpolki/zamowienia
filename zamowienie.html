@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twoje zamówienie — Konfigurator Półek</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root {
+  --cream: #F5F0E8;
+  --warm-white: #FAFAF7;
+  --bark: #8B5A2B;
+  --bark-light: #C4956A;
+  --bark-dark: #5C3A1A;
+  --charcoal: #1C1C1A;
+  --stone: #6B6860;
+  --stone-light: #B8B4AD;
+  --stone-lighter: #E8E4DC;
+  --green: #2D6A4F;
+  --green-light: #52B788;
+  --amber: #E9A84C;
+  --red: #C0392B;
+  --shadow-sm: 0 2px 8px rgba(28,28,26,0.06);
+  --shadow-md: 0 8px 32px rgba(28,28,26,0.10);
+  --shadow-lg: 0 24px 64px rgba(28,28,26,0.14);
+  --radius: 16px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--charcoal);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.5;
+}
+
+/* ── HEADER ── */
+.site-header {
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--stone-lighter);
+  background: var(--warm-white);
+}
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.4rem;
+  color: var(--bark-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--bark);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-icon svg { width: 18px; height: 18px; fill: white; }
+.header-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--stone);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── HERO STRIP ── */
+.hero-strip {
+  background: var(--bark-dark);
+  color: white;
+  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-strip::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(196,149,106,0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  padding: 4px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bark-light);
+  margin-bottom: 16px;
+}
+.hero-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.7)} }
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.hero-title em { font-style: italic; color: var(--bark-light); }
+.hero-subtitle { color: rgba(255,255,255,0.55); font-size: 0.9rem; font-weight: 300; }
+.order-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-size: 0.85rem;
+}
+.order-id-badge strong { font-weight: 600; color: white; font-size: 1rem; }
+.order-id-badge span { color: rgba(255,255,255,0.5); }
+
+/* ── MAIN LAYOUT ── */
+.main-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 40px;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+}
+@media(max-width:900px) {
+  .main-wrap { grid-template-columns: 1fr; padding: 24px 20px; }
+  .site-header { padding: 16px 20px; }
+  .hero-strip { padding: 32px 20px; }
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--stone-lighter);
+  overflow: hidden;
+}
+.card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--stone-lighter);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.card-header-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.card-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem;
+  color: var(--charcoal);
+  font-weight: 400;
+}
+.card-header p { font-size: 0.78rem; color: var(--stone); margin-top: 1px; }
+.card-body { padding: 24px; }
+
+/* ── STATUS TIMELINE ── */
+.status-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.status-step {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+.status-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 36px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--stone-lighter);
+}
+.status-step.done::before { background: var(--green-light); }
+.status-step.active::before { background: linear-gradient(var(--green-light), var(--stone-lighter)); }
+
+.step-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--stone-lighter);
+  background: var(--warm-white);
+  z-index: 1;
+  margin-top: 2px;
+  transition: all 0.4s ease;
+}
+.status-step.done .step-icon {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(45,106,79,0.12);
+}
+.status-step.active .step-icon {
+  background: var(--amber);
+  border-color: var(--amber);
+  box-shadow: 0 0 0 4px rgba(233,168,76,0.2);
+  animation: pulse-amber 2s infinite;
+}
+@keyframes pulse-amber {
+  0%,100% { box-shadow: 0 0 0 4px rgba(233,168,76,0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(233,168,76,0.08); }
+}
+.step-icon svg { width: 16px; height: 16px; }
+.status-step.done .step-icon svg { stroke: white; }
+.status-step.active .step-icon svg { stroke: white; }
+.status-step:not(.done):not(.active) .step-icon svg { stroke: var(--stone-light); }
+
+.step-content { padding: 4px 0 24px; flex: 1; }
+.step-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+}
+.status-step:not(.done):not(.active) .step-label { color: var(--stone-light); }
+.step-desc { font-size: 0.78rem; color: var(--stone); margin-top: 3px; font-weight: 300; }
+.step-date { font-size: 0.72rem; color: var(--bark); font-weight: 500; margin-top: 6px; }
+
+/* ── 3D VIEWER ── */
+.viewer-wrap {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: linear-gradient(145deg, #F0EDE6 0%, #E8E4DC 100%);
+  aspect-ratio: 4/3;
+}
+#shelfCanvas3d {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+.viewer-badge {
+  position: absolute;
+  bottom: 12px; left: 12px;
+  background: rgba(28,28,26,0.7);
+  backdrop-filter: blur(8px);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.05em;
+}
+.viewer-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(145deg, #F0EDE6 0%, #E8E4DC 100%);
+}
+.viewer-loading.hidden { display: none; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid var(--stone-lighter);
+  border-top-color: var(--bark);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.viewer-loading p { font-size: 0.78rem; color: var(--stone); }
+
+/* ── PRODUCT CHIPS ── */
+.product-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.chip {
+  background: var(--stone-lighter);
+  color: var(--stone);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+}
+.chip.accent { background: rgba(139,90,43,0.1); color: var(--bark-dark); }
+
+/* ── ORDER META ── */
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.meta-item { display: flex; flex-direction: column; gap: 3px; }
+.meta-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone-light); }
+.meta-value { font-size: 0.9rem; font-weight: 500; color: var(--charcoal); }
+.meta-value.price { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--bark-dark); }
+.divider { height: 1px; background: var(--stone-lighter); margin: 20px 0; }
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.status-badge.nowe { background: rgba(233,168,76,0.15); color: #A67820; }
+.status-badge.realizacja { background: rgba(45,106,79,0.12); color: var(--green); }
+.status-badge.wyslane { background: rgba(45,106,79,0.2); color: var(--green); }
+.status-badge.dostarczone { background: rgba(45,106,79,0.3); color: var(--bark-dark); }
+.status-badge .sdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ── TRACKING BOX ── */
+.tracking-box {
+  background: var(--cream);
+  border: 1px solid var(--stone-lighter);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  margin-top: 16px;
+}
+.tracking-box:hover { border-color: var(--bark-light); box-shadow: var(--shadow-sm); }
+.tracking-box .tk-icon {
+  width: 40px; height: 40px;
+  background: var(--bark);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.tracking-box .tk-icon svg { width: 20px; height: 20px; stroke: white; }
+.tracking-box .tk-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--stone); }
+.tracking-box .tk-value { font-size: 0.95rem; font-weight: 600; color: var(--charcoal); margin-top: 2px; }
+.tracking-box .tk-arrow { margin-left: auto; color: var(--stone-light); }
+
+/* ── CONTACT STRIP ── */
+.contact-strip {
+  background: var(--bark-dark);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.contact-strip p { font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+.contact-strip strong { display: block; font-size: 0.95rem; color: white; }
+.contact-btn {
+  background: var(--bark-light);
+  color: var(--bark-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.contact-btn:hover { background: white; }
+
+/* ── ERROR / LOADING STATES ── */
+.state-wrap {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 20px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+.state-icon {
+  width: 72px; height: 72px;
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+}
+.state-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; margin-bottom: 10px; }
+.state-desc { font-size: 0.9rem; color: var(--stone); line-height: 1.6; font-weight: 300; }
+
+/* ── ANIMATIONS ── */
+.fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+.fade-in-up { animation: fadeInUp 0.7s ease forwards; opacity: 0; }
+.fade-in-up:nth-child(2) { animation-delay: 0.1s; }
+.fade-in-up:nth-child(3) { animation-delay: 0.2s; }
+.fade-in-up:nth-child(4) { animation-delay: 0.3s; }
+@keyframes fadeIn { to { opacity: 1; } }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } from { opacity: 0; transform: translateY(16px); } }
+
+/* ── FOOTER ── */
+.site-footer {
+  text-align: center;
+  padding: 32px;
+  color: var(--stone-light);
+  font-size: 0.75rem;
+  border-top: 1px solid var(--stone-lighter);
+  margin-top: 24px;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="/" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="2" rx="1"/><rect x="2" y="12" width="20" height="2" rx="1"/><rect x="2" y="18" width="20" height="2" rx="1"/><rect x="4" y="4" width="2" height="16" rx="1"/><rect x="18" y="4" width="2" height="16" rx="1"/></svg>
+    </div>
+    Konfigurator Półek
+  </a>
+  <span class="header-label">Śledzenie zamówienia</span>
+</header>
+
+<!-- DYNAMIC CONTENT -->
+<div id="appRoot"></div>
+
+<footer class="site-footer">
+  © 2025 Konfigurator Półek · Wszystkie prawa zastrzeżone
+</footer>
+
+<script>
+// ── KONFIGURACJA ──
+const PROXY_URL = 'https://baselinker-proxy.007lukasz-m.workers.dev';
+
+// ── MAPOWANIE KOLORÓW I TYPÓW ──
+const codeToValue = {
+  type: { s: 'standing', h: 'hanging', m: 'mug_shelf', M: 'modular' },
+  typeLabel: { s: 'Stojąca', h: 'Wisząca', m: 'Na kubki', M: 'Modułowa' },
+  color: { '0': '#8B5A2B', '1': '#FFFFFF', '2': '#000000' },
+  colorLabel: { '0': 'Dąb', '1': 'Biała', '2': 'Czarna' }
+};
+
+// ── STATUS MAPPING ──
+const STATUS_STEPS = [
+  { key: 'nowe',       label: 'Zamówienie przyjęte',   desc: 'Otrzymaliśmy Twoje zamówienie i weryfikujemy szczegóły.', icon: 'check' },
+  { key: 'realizacja', label: 'W produkcji',            desc: 'Twoja półka jest aktualnie wytwarzana w naszym warsztacie.', icon: 'tool' },
+  { key: 'wyslane',    label: 'Wysłane',                desc: 'Paczka jest w drodze do Ciebie.', icon: 'truck' },
+  { key: 'dostarczone',label: 'Dostarczone',            desc: 'Półka dotarła do celu. Ciesz się!', icon: 'home' },
+];
+
+const ICONS = {
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  tool:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`,
+  truck: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  home:  `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  box:   `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>`,
+  search:`<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+};
+
+// ── PARSE ORDER CODE ──
+function parseOrderCode(code) {
+  if (!code) return null;
+  code = code.trim();
+  try {
+    // Modular: M-W44-H80-C20-D10-01-s
+    if (code.startsWith('M-')) {
+      const parts = code.split('-');
+      return {
+        type: 'modular',
+        typeLabel: 'Modułowa',
+        width: parts[1]?.replace('W',''),
+        height: parts[2]?.replace('H',''),
+        connectWidth: parts[3]?.replace('C',''),
+        depth: parts[4]?.replace('D',''),
+        sideColorHex: codeToValue.color[parts[5]?.[0]] || '#8B5A2B',
+        shelfColorHex: codeToValue.color[parts[5]?.[1]] || '#FFFFFF',
+        sideColorLabel: codeToValue.colorLabel[parts[5]?.[0]] || 'Dąb',
+        shelfColorLabel: codeToValue.colorLabel[parts[5]?.[1]] || 'Biała',
+        options: parts[6] || 's'
+      };
+    }
+    // Standard: s/h/m-W80-H100-D15-N3-01[-options]
+    const parts = code.split('-');
+    const typeChar = parts[0];
+    const colorPart = parts.find(p => /^[012]{2}$/.test(p)) || '01';
+    const wPart = parts.find(p => p.startsWith('W'))?.replace('W','');
+    const hPart = parts.find(p => p.startsWith('H'))?.replace('H','');
+    const dPart = parts.find(p => p.startsWith('D'))?.replace('D','');
+    const nPart = parts.find(p => p.startsWith('N'))?.replace('N','');
+    return {
+      type: codeToValue.type[typeChar] || 'standing',
+      typeLabel: codeToValue.typeLabel[typeChar] || 'Stojąca',
+      width: wPart,
+      height: hPart,
+      depth: dPart,
+      shelfCount: nPart,
+      sideColorHex: codeToValue.color[colorPart[0]] || '#8B5A2B',
+      shelfColorHex: codeToValue.color[colorPart[1]] || '#FFFFFF',
+      sideColorLabel: codeToValue.colorLabel[colorPart[0]] || 'Dąb',
+      shelfColorLabel: codeToValue.colorLabel[colorPart[1]] || 'Biała',
+    };
+  } catch(e) { return null; }
+}
+
+// ── 3D SHELF RENDERER ──
+function render3DShelf(canvasEl, config) {
+  if (!config) return;
+  const W = parseFloat(config.width) || 80;
+  const H = parseFloat(config.height) || 100;
+  const D = parseFloat(config.depth) || 15;
+  const N = parseInt(config.shelfCount) || 3;
+  const sideColor = config.sideColorHex || '#8B5A2B';
+  const shelfColor = config.shelfColorHex || '#FFFFFF';
+  const THICK = 1.8;
+
+  const scene = new THREE.Scene();
+  scene.background = null;
+
+  const aspect = canvasEl.clientWidth / canvasEl.clientHeight;
+  const camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 1000);
+
+  const scale = 0.055;
+  camera.position.set(W * scale * 1.8, H * scale * 0.6, D * scale * 5);
+  camera.lookAt(0, H * scale * 0.2, 0);
+
+  const renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+  renderer.setSize(canvasEl.clientWidth, canvasEl.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Lights
+  const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+  scene.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(5, 10, 8);
+  dirLight.castShadow = true;
+  scene.add(dirLight);
+  const fillLight = new THREE.DirectionalLight(0xfff8f0, 0.4);
+  fillLight.position.set(-3, 2, -4);
+  scene.add(fillLight);
+
+  const sideMat = new THREE.MeshStandardMaterial({ color: sideColor, roughness: 0.6, metalness: 0.05 });
+  const shelfMat = new THREE.MeshStandardMaterial({ color: shelfColor, roughness: 0.55, metalness: 0.05 });
+
+  const wS = W * scale; const hS = H * scale; const dS = D * scale; const tS = THICK * scale;
+  const group = new THREE.Group();
+
+  // Left side
+  const sideGeo = new THREE.BoxGeometry(tS, hS, dS);
+  const leftSide = new THREE.Mesh(sideGeo, sideMat);
+  leftSide.position.set(-wS/2 + tS/2, hS/2, 0);
+  leftSide.castShadow = true;
+  group.add(leftSide);
+
+  // Right side
+  const rightSide = new THREE.Mesh(sideGeo, sideMat);
+  rightSide.position.set(wS/2 - tS/2, hS/2, 0);
+  rightSide.castShadow = true;
+  group.add(rightSide);
+
+  // Inner width
+  const innerW = wS - 2 * tS;
+  const shelfGeo = new THREE.BoxGeometry(innerW, tS, dS);
+
+  // Top + bottom shelves
+  const topShelf = new THREE.Mesh(shelfGeo, shelfMat);
+  topShelf.position.set(0, hS - tS/2, 0);
+  topShelf.castShadow = true; topShelf.receiveShadow = true;
+  group.add(topShelf);
+
+  const bottomShelf = new THREE.Mesh(shelfGeo, shelfMat);
+  bottomShelf.position.set(0, tS/2, 0);
+  bottomShelf.castShadow = true; bottomShelf.receiveShadow = true;
+  group.add(bottomShelf);
+
+  // Inner shelves
+  const availH = hS - 2 * tS;
+  const gaps = N + 1;
+  for (let i = 1; i <= N; i++) {
+    const y = tS + (availH / gaps) * i;
+    const innerShelf = new THREE.Mesh(shelfGeo, shelfMat);
+    innerShelf.position.set(0, y, 0);
+    innerShelf.castShadow = true; innerShelf.receiveShadow = true;
+    group.add(innerShelf);
+  }
+
+  group.position.y = -hS / 2;
+  scene.add(group);
+
+  // Animate
+  let animId;
+  let t = 0;
+  function animate() {
+    animId = requestAnimationFrame(animate);
+    t += 0.008;
+    group.rotation.y = Math.sin(t) * 0.25 + 0.3;
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  return () => cancelAnimationFrame(animId);
+}
+
+// ── DETERMINE STATUS STEP ──
+function getStatusStep(statusName) {
+  const n = (statusName || '').toLowerCase();
+  if (n.includes('dostarczon') || n.includes('odebran')) return 3;
+  if (n.includes('wysłan') || n.includes('wyslano') || n.includes('transit') || n.includes('shipped')) return 2;
+  if (n.includes('realizac') || n.includes('produkcj') || n.includes('processing') || n.includes('w trakcie')) return 1;
+  return 0; // nowe / domyślny
+}
+
+// ── RENDER MAIN UI ──
+function renderOrder(order, statusName, trackingNum) {
+  const root = document.getElementById('appRoot');
+
+  // Parse config from user_comments
+  const comments = order.user_comments || '';
+  const codeMatch = comments.match(/Kod:\s*([^\n]+)/);
+  const orderCode = codeMatch ? codeMatch[1].trim() : null;
+  const config = parseOrderCode(orderCode);
+
+  const step = getStatusStep(statusName);
+  const isShipped = step >= 2;
+
+  // Extract price
+  const total = order.products?.reduce((s, p) => s + (parseFloat(p.price_brutto) * parseInt(p.quantity)), 0) || 0;
+
+  root.innerHTML = `
+    <div class="hero-strip fade-in">
+      <div class="hero-inner">
+        <div class="hero-tag"><span class="dot"></span>Śledzenie na żywo</div>
+        <h1 class="hero-title">Twoje zamówienie<br><em>jest u nas</em></h1>
+        <p class="hero-subtitle">Aktualne informacje prosto z naszego systemu</p>
+        <div class="order-id-badge">
+          <span>Numer zamówienia</span>
+          <strong>#${order.order_id}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-wrap">
+      <!-- LEWA KOLUMNA -->
+      <div style="display:flex;flex-direction:column;gap:24px;">
+
+        <!-- STATUS -->
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-header-icon" style="background:rgba(45,106,79,0.1);">
+              ${ICONS.check.replace('stroke="currentColor"','stroke="#2D6A4F"')}
+            </div>
+            <div>
+              <h2>Status zamówienia</h2>
+              <p>Aktualizowany w czasie rzeczywistym</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="status-timeline">
+              ${STATUS_STEPS.map((s, i) => `
+                <div class="status-step ${i < step ? 'done' : i === step ? 'active' : ''}">
+                  <div class="step-icon">${ICONS[s.icon]}</div>
+                  <div class="step-content">
+                    <div class="step-label">${s.label}</div>
+                    <div class="step-desc">${i === step ? s.desc : (i < step ? 'Ukończono' : 'Oczekuje')}</div>
+                    ${i === step ? `<div class="step-date">Aktualny status: ${statusName}</div>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D PODGLĄD -->
+        ${config ? `
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-header-icon" style="background:rgba(139,90,43,0.1);">
+              ${ICONS.box.replace('stroke="currentColor"','stroke="#8B5A2B"')}
+            </div>
+            <div>
+              <h2>Twoja półka — podgląd 3D</h2>
+              <p>Wygenerowany na podstawie konfiguracji</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="viewer-wrap">
+              <div class="viewer-loading" id="viewerLoading">
+                <div class="spinner"></div>
+                <p>Renderuję podgląd…</p>
+              </div>
+              <canvas id="shelfCanvas3d"></canvas>
+              <div class="viewer-badge">Widok 3D · obrót automatyczny</div>
+            </div>
+            <div class="product-chips">
+              <span class="chip accent">${config.typeLabel}</span>
+              ${config.width ? `<span class="chip">szer. ${config.width} cm</span>` : ''}
+              ${config.height ? `<span class="chip">wys. ${config.height} cm</span>` : ''}
+              ${config.depth ? `<span class="chip">gł. ${config.depth} cm</span>` : ''}
+              ${config.shelfCount ? `<span class="chip">${config.shelfCount} półek wewn.</span>` : ''}
+              <span class="chip">Boki: ${config.sideColorLabel}</span>
+              <span class="chip">Półki: ${config.shelfColorLabel}</span>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+      </div>
+
+      <!-- PRAWA KOLUMNA -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- SZCZEGÓŁY -->
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-header-icon" style="background:rgba(28,28,26,0.06);">
+              ${ICONS.box}
+            </div>
+            <div><h2>Szczegóły</h2></div>
+          </div>
+          <div class="card-body">
+            <div class="meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Status</span>
+                <span class="status-badge ${['nowe','realizacja','wyslane','dostarczone'][step]}">
+                  <span class="sdot"></span>${statusName}
+                </span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Data zamówienia</span>
+                <span class="meta-value">${new Date(order.date_add * 1000).toLocaleDateString('pl-PL', {day:'numeric',month:'long',year:'numeric'})}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Dostawa</span>
+                <span class="meta-value">${order.delivery_method || 'Kurier'}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Płatność</span>
+                <span class="meta-value">${order.payment_method || 'Przelew'}</span>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="meta-item">
+              <span class="meta-label">Łącznie do zapłaty</span>
+              <span class="meta-value price">${total.toFixed(2)} zł</span>
+            </div>
+            ${order.delivery_fullname ? `
+            <div class="divider"></div>
+            <div class="meta-item">
+              <span class="meta-label">Adres dostawy</span>
+              <span class="meta-value">${order.delivery_fullname}</span>
+              <span class="meta-value" style="font-weight:300;font-size:0.82rem;color:var(--stone);margin-top:2px;">${order.delivery_address || ''}, ${order.delivery_postcode || ''} ${order.delivery_city || ''}</span>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- ŚLEDZENIE PACZKI -->
+        ${trackingNum ? `
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-header-icon" style="background:rgba(139,90,43,0.1);">
+              ${ICONS.truck.replace('stroke="currentColor"','stroke="#8B5A2B"')}
+            </div>
+            <div><h2>Paczka w drodze</h2></div>
+          </div>
+          <div class="card-body">
+            <a href="https://www.dhl.com/pl-pl/home/sledzenie/sledzenie-przesylek.html?submit=1&tracking-id=${trackingNum}" target="_blank" class="tracking-box">
+              <div class="tk-icon">${ICONS.truck}</div>
+              <div>
+                <div class="tk-label">Numer listu przewozowego</div>
+                <div class="tk-value">${trackingNum}</div>
+              </div>
+              <div class="tk-arrow">→</div>
+            </a>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- KONTAKT -->
+        <div class="card fade-in-up">
+          <div class="card-header">
+            <div class="card-header-icon" style="background:rgba(233,168,76,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#A67820" stroke-width="2" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013 4.18 2 2 0 015 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            </div>
+            <div><h2>Masz pytanie?</h2></div>
+          </div>
+          <div class="card-body">
+            <div class="contact-strip">
+              <div>
+                <p>Jesteśmy do Twojej dyspozycji</p>
+                <strong>Odpiszemy w ciągu 24h</strong>
+              </div>
+              <a href="mailto:kontakt@polki.pl" class="contact-btn">Napisz do nas</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  // Init 3D
+  if (config) {
+    setTimeout(() => {
+      const canvas = document.getElementById('shelfCanvas3d');
+      const loading = document.getElementById('viewerLoading');
+      if (canvas) {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        render3DShelf(canvas, config);
+        if (loading) loading.classList.add('hidden');
+      }
+    }, 300);
+  }
+}
+
+// ── RENDER ERROR ──
+function renderError(title, desc) {
+  document.getElementById('appRoot').innerHTML = `
+    <div class="state-wrap fade-in">
+      <div class="state-icon" style="background:rgba(192,57,43,0.1);">
+        ${ICONS.alert.replace('stroke="currentColor"','stroke="#C0392B"')}
+      </div>
+      <h2 class="state-title">${title}</h2>
+      <p class="state-desc">${desc}</p>
+    </div>
+  `;
+}
+
+// ── RENDER LOADING ──
+function renderLoading() {
+  document.getElementById('appRoot').innerHTML = `
+    <div class="state-wrap">
+      <div class="spinner" style="width:48px;height:48px;margin-bottom:24px;"></div>
+      <h2 class="state-title" style="font-size:1.4rem;">Ładuję zamówienie…</h2>
+      <p class="state-desc">Pobieramy aktualne dane z systemu</p>
+    </div>
+  `;
+}
+
+// ── MAIN ──
+async function main() {
+  renderLoading();
+
+  // Pobierz ID z URL: ?id=12345
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('id');
+
+  if (!orderId) {
+    renderError('Brak numeru zamówienia', 'Sprawdź link który otrzymałeś w wiadomości e-mail. Powinien zawierać numer Twojego zamówienia.');
+    return;
+  }
+
+  try {
+    // Pobierz zamówienie z BaseLinker
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        method: 'getOrders',
+        parameters: { order_id: parseInt(orderId) }
+      })
+    });
+    const data = await res.json();
+
+    if (data.status !== 'SUCCESS' || !data.orders?.length) {
+      renderError('Nie znaleziono zamówienia', `Zamówienie #${orderId} nie istnieje lub nie mamy do niego dostępu. Sprawdź poprawność linku.`);
+      return;
+    }
+
+    const order = data.orders[0];
+
+    // Pobierz listę statusów
+    let statusName = 'Nowe zamówienia';
+    let trackingNum = order.delivery_package_nr || null;
+    try {
+      const sRes = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'getOrderStatusList', parameters: {} })
+      });
+      const sData = await sRes.json();
+      if (sData.status === 'SUCCESS') {
+        const found = sData.statuses?.find(s => s.id == order.order_status_id);
+        if (found) statusName = found.name;
+      }
+    } catch(e) {}
+
+    renderOrder(order, statusName, trackingNum);
+
+  } catch(e) {
+    renderError('Błąd połączenia', 'Nie udało się pobrać danych zamówienia. Spróbuj odświeżyć stronę za chwilę.');
+  }
+}
+
+main();
+</script>
+</body>
+</html>
