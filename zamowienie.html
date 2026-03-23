@@ -286,8 +286,30 @@ function build3D(canvas,cfg){
 
 function renderPage(order,statusName,tracking){
   const comments=order.user_comments||'';
-  const codeM=comments.match(/Kod konfiguracji:\s*([^\n\r]+)/i)||comments.match(/Kod:\s*([^\n\r]+)/i);
-  const cfg=parseCode(codeM?.[1]);
+
+  // Parse ALL product codes from comments and from products array
+  const allCodes=[];
+  // 1. Extract from comments (multi-line code block)
+  const fullCodeBlock = comments.match(/Kod konfiguracji:\s*([\s\S]+?)(?:\n\n|$)/i);
+  if(fullCodeBlock){
+    fullCodeBlock[1].trim().split(/\r?\n/).forEach(line=>{
+      const c=line.trim();
+      if(c) allCodes.push(c);
+    });
+  }
+  // 2. If no codes found in comments, try per-product SKU
+  if(allCodes.length===0){
+    (order.products||[]).forEach(p=>{ if(p.sku) allCodes.push(p.sku); });
+  }
+  // 3. Fallback single code
+  if(allCodes.length===0){
+    const single=comments.match(/Kod:\s*([^\n\r]+)/i);
+    if(single) allCodes.push(single[1].trim());
+  }
+
+  // Parse all configs
+  const cfgs=allCodes.map(c=>({code:c,cfg:parseCode(c)})).filter(x=>x.cfg);
+
   const step=getStep(statusName);
   const total=(order.products||[]).reduce((s,p)=>s+parseFloat(p.price_brutto||0)*parseInt(p.quantity||1),0);
   const dateStr=new Date(order.date_add*1000).toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'});
@@ -297,6 +319,33 @@ function renderPage(order,statusName,tracking){
   const classes=stepLabels.map((_,i)=>i<step?'p-done':i===step?'p-active':'p-wait');
   const pct=[0,25,62,100][step]||0;
   const dotPos=[0,25,62,100][step]||0;
+
+  // Build 3D cards HTML for all products
+  const threeDCards = cfgs.length>0 ? cfgs.map((item,idx)=>`
+    <div class="card">
+      <div class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="sec-label" style="margin-bottom:0">Podgląd półki ${cfgs.length>1?`#${idx+1}`:''}</div>
+          ${cfgs.length>1?`<span style="font-size:.68rem;font-weight:600;color:#9ca3af;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:99px;padding:3px 9px">Projekt ${idx+1} z ${cfgs.length}</span>`:''}
+        </div>
+        <div class="viewer-wrap" id="viewer-wrap-${idx}">
+          <canvas id="shelfCanvas-${idx}"></canvas>
+          <div class="voverlay" id="vov-${idx}"><div class="spin" style="width:26px;height:26px"></div><p>Renderuję widok 3D…</p></div>
+          <div class="viewer-hint">🖱 Przeciągnij aby obrócić</div>
+        </div>
+        <div class="chips" style="margin-top:10px">
+          <span class="chip g">${item.cfg.typeLabel}</span>
+          ${item.cfg.width?`<span class="chip">szer. ${item.cfg.width} cm</span>`:''}
+          ${item.cfg.height?`<span class="chip">wys. ${item.cfg.height} cm</span>`:''}
+          ${item.cfg.depth?`<span class="chip">gł. ${item.cfg.depth} cm</span>`:''}
+          ${item.cfg.shelfCount?`<span class="chip">${item.cfg.shelfCount} półek wewn.</span>`:''}
+          <span class="chip">Boki: ${item.cfg.sideLbl}</span>
+          <span class="chip">Półki: ${item.cfg.shelfLbl}</span>
+          ${item.cfg.noTop?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez górnej półki</span>`:''}
+          ${item.cfg.noBottom?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez dolnej podstawy</span>`:''}
+        </div>
+      </div>
+    </div>`).join('') : '';
 
   document.getElementById('root').innerHTML=`
     <!-- HERO -->
@@ -320,7 +369,6 @@ function renderPage(order,statusName,tracking){
       </div>
     </div>
 
-    <!-- DESKTOP: 2 columns -->
     <div class="layout">
 
       <!-- LEWA KOLUMNA -->
@@ -339,8 +387,6 @@ function renderPage(order,statusName,tracking){
             </div>
             <div class="status-pill">${statusName}</div>
           </div>
-
-          <!-- ODLICZANIE -->
           <div class="section">
             <div class="sec-label">Szacowana dostawa za</div>
             <div class="countdown">
@@ -355,29 +401,8 @@ function renderPage(order,statusName,tracking){
           </div>
         </div>
 
-        <!-- 3D -->
-        ${cfg?`
-        <div class="card">
-          <div class="section">
-            <div class="sec-label">Podgląd Twojej półki</div>
-            <div class="viewer-wrap">
-              <canvas id="shelfCanvas"></canvas>
-              <div class="voverlay" id="vov"><div class="spin" style="width:26px;height:26px"></div><p>Renderuję widok 3D…</p></div>
-              <div class="viewer-hint">🖱 Przeciągnij aby obrócić</div>
-            </div>
-            <div class="chips">
-              <span class="chip g">${cfg.typeLabel}</span>
-              ${cfg.width?`<span class="chip">szer. ${cfg.width} cm</span>`:''}
-              ${cfg.height?`<span class="chip">wys. ${cfg.height} cm</span>`:''}
-              ${cfg.depth?`<span class="chip">gł. ${cfg.depth} cm</span>`:''}
-              ${cfg.shelfCount?`<span class="chip">${cfg.shelfCount} półek wewn.</span>`:''}
-              <span class="chip">Boki: ${cfg.sideLbl}</span>
-              <span class="chip">Półki: ${cfg.shelfLbl}</span>
-              ${cfg.noTop?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez górnej półki</span>`:''}
-              ${cfg.noBottom?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez dolnej podstawy</span>`:''}
-            </div>
-          </div>
-        </div>`:''}
+        <!-- PODGLĄDY 3D — wszystkie projekty -->
+        ${threeDCards}
 
         <!-- TRACKING -->
         ${tracking?`
@@ -406,6 +431,7 @@ function renderPage(order,statusName,tracking){
             <div class="sum-row"><span class="sum-lbl">Metoda dostawy</span><span class="sum-val">${order.delivery_method||'Kurier'}</span></div>
             <div class="sum-row"><span class="sum-lbl">Płatność</span><span class="sum-val">${order.payment_method||'Przelew'}</span></div>
             <div class="sum-row"><span class="sum-lbl">Szac. dostawa</span><span class="sum-val" style="color:#16a34a">${delivStr}</span></div>
+            ${cfgs.length>1?`<div class="sum-row"><span class="sum-lbl">Liczba projektów</span><span class="sum-val">${cfgs.length} półki</span></div>`:''}
           </div>
           ${order.delivery_fullname?`
           <div class="sum-section">
@@ -413,6 +439,26 @@ function renderPage(order,statusName,tracking){
             <div style="font-size:.85rem;font-weight:600;color:#111827;margin-bottom:3px">${order.delivery_fullname}</div>
             <div style="font-size:.78rem;color:#9ca3af">${order.delivery_address||''}, ${order.delivery_postcode||''} ${order.delivery_city||''}</div>
           </div>`:''}
+
+          <!-- LISTA PRODUKTÓW -->
+          ${(order.products||[]).length>0?`
+          <div class="sum-section">
+            <div class="sec-label">Zamówione produkty</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              ${(order.products||[]).map((p,i)=>`
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:#fafafa;border:1px solid #f3f4f6;border-radius:9px;gap:8px">
+                <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                  <div style="width:28px;height:28px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem;font-weight:700;color:#16a34a">${i+1}</div>
+                  <div style="min-width:0">
+                    <div style="font-size:.78rem;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name||'Półka'}</div>
+                    <div style="font-size:.68rem;color:#9ca3af">szt. ${p.quantity||1}</div>
+                  </div>
+                </div>
+                <div style="font-size:.82rem;font-weight:600;color:#111827;flex-shrink:0">${parseFloat(p.price_brutto||0).toFixed(2).replace('.',',')} zł</div>
+              </div>`).join('')}
+            </div>
+          </div>`:''}
+
           <div class="sum-total">
             <span class="lbl">Zapłacono</span>
             <span class="val">${total.toFixed(2).replace('.',',')} zł</span>
@@ -423,7 +469,7 @@ function renderPage(order,statusName,tracking){
         <div class="summary-card" style="overflow:hidden">
           <div class="contact-bar" style="border-radius:0">
             <div><strong>Masz pytanie?</strong><span>Odpiszemy w ciągu 24 godzin</span></div>
-            <div style="text-align:right"><div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:2px">E-mail</div><div style="font-size:.85rem;font-weight:600;color:white;letter-spacing:.01em">nowywymiar2@gmail.com</div></div>
+            <div style="text-align:right"><div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:2px">E-mail</div><div style="font-size:.85rem;font-weight:600;color:white">nowywymiar2@gmail.com</div></div>
           </div>
         </div>
 
@@ -432,15 +478,27 @@ function renderPage(order,statusName,tracking){
 
   startCountdown(delivDate);
 
-  if(cfg){
-    requestAnimationFrame(()=>{requestAnimationFrame(()=>{
-      const canvas=document.getElementById('shelfCanvas');if(!canvas)return;
-      const rect=canvas.parentElement.getBoundingClientRect();
-      canvas.width=rect.width*window.devicePixelRatio;canvas.height=rect.height*window.devicePixelRatio;
-      canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
-      try{build3D(canvas,cfg);setTimeout(()=>{const ov=document.getElementById('vov');if(ov)ov.classList.add('gone');},700);}
-      catch(e){console.error('3D:',e);}
-    });});
+  // Init ALL 3D canvases
+  if(cfgs.length>0){
+    cfgs.forEach((item,idx)=>{
+      requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+        const canvas=document.getElementById('shelfCanvas-'+idx);
+        if(!canvas)return;
+        const wrap=document.getElementById('viewer-wrap-'+idx);
+        const rect=wrap.getBoundingClientRect();
+        canvas.width=rect.width*window.devicePixelRatio;
+        canvas.height=rect.height*window.devicePixelRatio;
+        canvas.style.width=rect.width+'px';
+        canvas.style.height=rect.height+'px';
+        try{
+          build3D(canvas,item.cfg);
+          setTimeout(()=>{
+            const ov=document.getElementById('vov-'+idx);
+            if(ov)ov.classList.add('gone');
+          },700+idx*200);
+        }catch(e){console.error('3D error idx='+idx,e);}
+      });});
+    });
   }
 }
 
