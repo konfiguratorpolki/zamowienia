@@ -167,25 +167,58 @@ const TYPE_LABEL={s:'Stojąca',h:'Wisząca',m:'Na kubki',M:'Modułowa'};
 
 function parseCode(raw){
   if(!raw)return null;
-  const code=raw.trim().toLowerCase();
+  const code=raw.trim(); // NIE lowercase - zachowaj 'M' vs 'm'
+  const codeLow=code.toLowerCase();
   try{
     const p=code.split('-');
-    if(p[0]==='m'&&p.length>=6){const col=p[5]||'01';return{type:'modular',typeLabel:'Modułowa',width:p[1]?.replace('w',''),height:p[2]?.replace('h',''),depth:p[4]?.replace('d',''),shelfCount:null,sideHex:COLOR_HEX[col[0]]||'#8B5A2B',shelfHex:COLOR_HEX[col[1]]||'#FFFFFF',sideLbl:COLOR_LABEL[col[0]]||'Dąb',shelfLbl:COLOR_LABEL[col[1]]||'Biała'};}
+    const pLow=codeLow.split('-');
+
+    // MODULARNY: format M-W44-H40-C20-D10-01-s
+    if(p[0]==='M'&&p.length>=6){
+      // p[1]=W44, p[2]=H40, p[3]=C20(connectingWidth), p[4]=D10(depth), p[5]=colorcodes, p[6]=options
+      const col=p[5]||'01';
+      const modW=p[1]?.toUpperCase().replace('W','');   // szerokość modułu
+      const modH=p[2]?.toUpperCase().replace('H','');   // wysokość
+      const connW=p[3]?.toUpperCase().replace('C','');  // szerokość półki łączącej
+      const depthV=p[4]?.toUpperCase().replace('D',''); // głębokość
+      return{type:'modular',typeLabel:'Modułowa',
+        width:modW, height:modH, connectingWidth:connW, depth:depthV,
+        shelfCount:null, isMugShelf:false, isModular:true,
+        sideHex:COLOR_HEX[col[0]]||'#8B5A2B',shelfHex:COLOR_HEX[col[1]]||'#FFFFFF',
+        sideLbl:COLOR_LABEL[col[0]]||'Dąb',shelfLbl:COLOR_LABEL[col[1]]||'Biała'};
+    }
+
     if(p.length>=7){
-      const sc=p[5],shc=p[6],optCode=p[7]||'';
+      const sc=pLow[5],shc=pLow[6],optCode=pLow[7]||'';
       let cp=null;
-      if(p[8]&&p[8].startsWith('cp'))cp=p[8].substring(2).split('.').map(Number).filter(n=>!isNaN(n));
-      // opcje: 't' = bez górnej półki, 'b' = bez dolnej półki/podstawy
-      const noTop = optCode.includes('t');
-      const noBottom = optCode.includes('b');
-      return{type:p[0],typeLabel:TYPE_LABEL[p[0]]||'Stojąca',
-        width:p[1],height:p[2],depth:p[3],shelfCount:p[4],customPositions:cp,
-        noTop,noBottom,
+      if(p[8]&&p[8].toLowerCase().startsWith('cp'))
+        cp=p[8].substring(2).split('.').map(Number).filter(n=>!isNaN(n));
+
+      const typeKey=pLow[0];
+      const isMug = typeKey==='m';
+
+      // Półka na kubki (m): optCode = mountCode(s/h) + dividerCodes(g/m/d)
+      let divTop=false,divMid=false,divBot=false,mugMount='standing';
+      if(isMug){
+        mugMount = optCode.startsWith('h') ? 'hanging' : 'standing';
+        divTop = optCode.includes('g');
+        divMid = optCode.includes('m');
+        divBot = optCode.includes('d');
+      }
+
+      const noTop = !isMug && optCode.includes('t');
+      const noBottom = !isMug && optCode.includes('b');
+
+      return{type:typeKey,
+        typeLabel: isMug ? 'Na kubki' : (TYPE_LABEL[typeKey]||'Stojąca'),
+        width:pLow[1],height:pLow[2],depth:pLow[3],shelfCount:pLow[4],
+        customPositions:cp,noTop,noBottom,
+        isMugShelf:isMug,mugMount,divTop,divMid,divBot,
         sideHex:COLOR_HEX[sc]||'#8B5A2B',shelfHex:COLOR_HEX[shc]||'#FFFFFF',
         sideLbl:COLOR_LABEL[sc]||'Dąb',shelfLbl:COLOR_LABEL[shc]||'Biała'};
     }
     return null;
-  }catch(e){return null;}
+  }catch(e){console.error('parseCode error:',e);return null;}
 }
 
 function getStep(name){
@@ -218,94 +251,192 @@ function startCountdown(target){
 }
 
 function build3D(canvas,cfg){
-  const W=parseFloat(cfg.width)||80,H=parseFloat(cfg.height)||100,D=parseFloat(cfg.depth)||15,N=parseInt(cfg.shelfCount)||3;
-  const SC=0.1,TH=0.18,wS=W*SC,hS=H*SC,dS=D*SC,tS=TH;
-  const cw=canvas.offsetWidth,ch=canvas.offsetHeight;
-  const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f0f0);
+  const SC=0.1, TH=0.18;
+  const cw=canvas.offsetWidth, ch=canvas.offsetHeight;
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(0xf0f0f0);
   const camera=new THREE.PerspectiveCamera(75,cw/ch,0.1,1000);
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-  renderer.setSize(cw,ch);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(cw,ch); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
   scene.add(new THREE.HemisphereLight(0xffffff,0x444444,1));
-  const dir=new THREE.DirectionalLight(0xffffff,0.6);dir.position.set(4,8,3);scene.add(dir);
+  const dir=new THREE.DirectionalLight(0xffffff,0.6); dir.position.set(4,8,3); scene.add(dir);
   const mkMat=()=>new THREE.MeshStandardMaterial({color:0x777777,metalness:0,roughness:0.6});
   const lineMat=new THREE.LineBasicMaterial({color:0x16a34a,linewidth:2});
   const grp=new THREE.Group();
-  const sG=new THREE.BoxGeometry(tS,hS,dS);
-  const lS=new THREE.Mesh(sG,mkMat());lS.position.set(-wS/2+tS/2,0,0);grp.add(lS);
-  const rS=new THREE.Mesh(sG.clone(),mkMat());rS.position.set(wS/2-tS/2,0,0);grp.add(rS);
-  const iW=wS-2*tS,pG=new THREE.BoxGeometry(iW,tS,dS);
-  const addP=(y,n)=>{const m=new THREE.Mesh(pG.clone(),mkMat());m.position.set(0,y,0);m.name=n;grp.add(m);return m;};
-  // Górna i dolna półka zależnie od opcji
-  const noTop=!!cfg.noTop, noBottom=!!cfg.noBottom;
-  const btm=noBottom?null:addP(-hS/2+tS/2,'b');
-  const top=noTop?null:addP(hS/2-tS/2,'t');
-  const ints=[];
-  if(N>0){
-    const topT=noTop?0:tS, btmT=noBottom?0:tS;
-    const av=hS-topT-btmT;
-    const startY=-hS/2+btmT;
-    const gap=av/(N+1);
-    for(let i=1;i<=N;i++)ints.push(addP(startY+gap*i,'s'+i));
+
+  if(cfg.type==='modular'){
+    // ── PÓŁKA MODUŁOWA: dwa moduły + łączące półki ──
+    const mW=parseFloat(cfg.width)||44;
+    const mH=parseFloat(cfg.height)||40;
+    const cW=parseFloat(cfg.connectingWidth)||20; // szerokość półki łączącej
+    const D2=parseFloat(cfg.depth)||10; // głębokość
+    const D=10; // głębokość domyślna
+    const wS=mW*SC, hS=mH*SC, dS=D2*SC, cS=cW*SC, tS=TH;
+    let shelfNum=3;
+    if(mH===40)shelfNum=2; if(mH===80)shelfNum=5;
+
+    function createModule(xPos){
+      const mg=new THREE.Group();
+      const sGeo=new THREE.BoxGeometry(tS,hS,dS);
+      const lS=new THREE.Mesh(sGeo.clone(),mkMat()); lS.position.set(-wS/2+tS/2,0,0); mg.add(lS);
+      const rS=new THREE.Mesh(sGeo.clone(),mkMat()); rS.position.set(wS/2-tS/2,0,0); mg.add(rS);
+      const iW=wS-2*tS;
+      const pG=new THREE.BoxGeometry(iW,tS,dS);
+      const btm=new THREE.Mesh(pG.clone(),mkMat()); btm.position.set(0,-hS/2+tS/2,0); btm.name='bottomPanel'; mg.add(btm);
+      const top=new THREE.Mesh(pG.clone(),mkMat()); top.position.set(0,hS/2-tS/2,0); top.name='topPanel'; mg.add(top);
+      if(shelfNum>0){
+        const avail=hS-2*tS, gap=avail/(shelfNum+1);
+        for(let i=1;i<=shelfNum;i++){
+          const s=new THREE.Mesh(pG.clone(),mkMat());
+          s.position.set(0,-hS/2+tS+gap*i,0); s.name=`s${i-1}`; mg.add(s);
+        }
+      }
+      mg.position.x=xPos; return mg;
+    }
+    const leftM=createModule(-(cS/2+wS/2));
+    const rightM=createModule(cS/2+wS/2);
+    grp.add(leftM,rightM);
+    // Łączące półki
+    const cGeo=new THREE.BoxGeometry(cS,tS,dS);
+    const yPositions=[];
+    leftM.children.forEach(c=>{if(c.name==='topPanel'||c.name==='bottomPanel'||c.name?.startsWith('s'))yPositions.push(c.position.y);});
+    yPositions.sort((a,b)=>b-a);
+    for(let i=0;i<yPositions.length-1;i++){
+      const mid=(yPositions[i]+yPositions[i+1])/2;
+      const cs=new THREE.Mesh(cGeo.clone(),mkMat()); cs.position.set(0,mid,0); grp.add(cs);
+    }
+
+  } else {
+    // ── ZWYKŁA / NA KUBKI / WISZĄCA / STOJĄCA ──
+    const W=parseFloat(cfg.width)||44;
+    const H=parseFloat(cfg.height)||60;
+    const D=parseFloat(cfg.depth)||10;
+    const N=parseInt(cfg.shelfCount)||0;
+    const wS=W*SC, hS=H*SC, dS=D*SC, tS=TH;
+    const iW=wS-2*tS;
+
+    const sGeo=new THREE.BoxGeometry(tS,hS,dS);
+    const lS=new THREE.Mesh(sGeo.clone(),mkMat()); lS.position.set(-wS/2+tS/2,0,0); grp.add(lS);
+    const rS=new THREE.Mesh(sGeo.clone(),mkMat()); rS.position.set(wS/2-tS/2,0,0); grp.add(rS);
+
+    const pGeo=new THREE.BoxGeometry(iW,tS,dS);
+    const addP=(y,name)=>{const m=new THREE.Mesh(pGeo.clone(),mkMat());m.position.set(0,y,0);m.name=name;grp.add(m);return m;};
+
+    const btm=cfg.noBottom?null:addP(-hS/2+tS/2,'bottom');
+    const top=cfg.noTop?null:addP(hS/2-tS/2,'top');
+    const internals=[];
+    if(N>0){
+      const topT=cfg.noTop?0:tS, btmT=cfg.noBottom?0:tS;
+      const avail=hS-topT-btmT, startY=-hS/2+btmT, gap=avail/(N+1);
+      for(let i=1;i<=N;i++) internals.push(addP(startY+gap*i,'shelf_'+i));
+    }
+
+    // Strzałki dla zwykłych półek
+    if(!cfg.isMugShelf && internals.length>0){
+      const zF=dS/2+0.01;
+      function mkLbl(txt,x,y,z){
+        const cv=document.createElement('canvas');cv.width=256;cv.height=80;
+        const ctx=cv.getContext('2d');
+        ctx.fillStyle='rgba(220,252,231,0.96)';ctx.strokeStyle='#16a34a';ctx.lineWidth=4;
+        ctx.beginPath();ctx.roundRect(3,3,250,74,12);ctx.fill();ctx.stroke();
+        ctx.fillStyle='#15803d';ctx.font='bold 44px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,128,40);
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false}));
+        const sc=hS*0.16;sp.scale.set(sc,sc*0.32,1);sp.position.set(x,y,z);sp.renderOrder=999;grp.add(sp);
+      }
+      function ln(pts){grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(...p))),lineMat));}
+      function vArr(x,y1,y2,z,lbl){
+        const mid=(y1+y2)/2,cap=tS*0.8,as=tS*0.7;
+        ln([[x,y1,z],[x,y2,z]]);ln([[x-cap,y1,z],[x+cap,y1,z]]);ln([[x-cap,y2,z],[x+cap,y2,z]]);
+        ln([[x-as,y2-as*1.5,z],[x,y2,z],[x+as,y2-as*1.5,z]]);ln([[x-as,y1+as*1.5,z],[x,y1,z],[x+as,y1+as*1.5,z]]);
+        mkLbl(lbl,x-hS*0.2,mid,z+0.02);
+      }
+      const xA=wS/2-tS*1.2;
+      const sorted=[...internals].sort((a,b)=>a.position.y-b.position.y);
+      const bY=btm?btm.position.y+tS/2:-hS/2;
+      const tY=top?top.position.y-tS/2:hS/2;
+      const levels=[{y1:bY,y2:sorted[0].position.y-tS/2}];
+      for(let i=0;i<sorted.length-1;i++)levels.push({y1:sorted[i].position.y+tS/2,y2:sorted[i+1].position.y-tS/2});
+      levels.push({y1:sorted[sorted.length-1].position.y+tS/2,y2:tY});
+      levels.forEach(lv=>{const cm=Math.round((lv.y2-lv.y1)*10*10)/10;if(cm<0.5)return;vArr(xA,lv.y1,lv.y2,zF,Number.isInteger(cm)?cm+' cm':cm.toFixed(1)+' cm');});
+    }
+
+    // Przegródki pionowe dla półki na kubki
+    if(cfg.isMugShelf && internals.length>0){
+      const divTh=tS*0.8;
+      const sorted=[...internals].sort((a,b)=>b.position.y-a.position.y);
+      // Poziomy: top=między top a shelf[0], mid=między shelf[0] a shelf[1], bot=między shelf[1] a btm
+      const bY=btm?btm.position.y+tS/2:-hS/2;
+      const tY=top?top.position.y-tS/2:hS/2;
+      const levels=[
+        {y1:sorted[0]?sorted[0].position.y+tS/2:0, y2:tY, name:'top', active:cfg.divTop},
+        {y1:sorted[1]?sorted[1].position.y+tS/2:0, y2:sorted[0]?sorted[0].position.y-tS/2:0, name:'mid', active:cfg.divMid},
+        {y1:bY, y2:sorted[sorted.length-1]?sorted[sorted.length-1].position.y-tS/2:0, name:'bot', active:cfg.divBot},
+      ];
+      const numDiv=(W>=60)?3:2;
+      levels.forEach(lv=>{
+        if(!lv.active)return;
+        const lvH=lv.y2-lv.y1;
+        if(lvH<0.05)return;
+        const yCenter=(lv.y1+lv.y2)/2;
+        const dGeo=new THREE.BoxGeometry(divTh,lvH,dS*0.9);
+        const cellW=iW/(numDiv+1);
+        for(let d=1;d<=numDiv;d++){
+          const xPos=-iW/2+cellW*d;
+          const mesh=new THREE.Mesh(dGeo.clone(),mkMat());
+          mesh.position.set(xPos,yCenter,0);
+          grp.add(mesh);
+        }
+      });
+    }
   }
-  const zF=dS/2+0.01;
-  function mkLbl(txt,x,y,z){
-    const cv=document.createElement('canvas');cv.width=256;cv.height=80;
-    const ctx=cv.getContext('2d');
-    ctx.fillStyle='rgba(220,252,231,0.96)';ctx.strokeStyle='#16a34a';ctx.lineWidth=4;
-    ctx.beginPath();ctx.roundRect(3,3,250,74,12);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#15803d';ctx.font='bold 44px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,128,40);
-    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthTest:false}));
-    const sc=hS*0.16;sp.scale.set(sc,sc*0.32,1);sp.position.set(x,y,z);sp.renderOrder=999;grp.add(sp);
-  }
-  function ln(pts){grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(...p))),lineMat));}
-  function vArr(x,y1,y2,z,lbl){
-    const mid=(y1+y2)/2,cap=tS*0.8,as=tS*0.7;
-    ln([[x,y1,z],[x,y2,z]]);ln([[x-cap,y1,z],[x+cap,y1,z]]);ln([[x-cap,y2,z],[x+cap,y2,z]]);
-    ln([[x-as,y2-as*1.5,z],[x,y2,z],[x+as,y2-as*1.5,z]]);ln([[x-as,y1+as*1.5,z],[x,y1,z],[x+as,y1+as*1.5,z]]);
-    mkLbl(lbl,x-hS*0.2,mid,z+0.02);
-  }
-  if(ints.length>0){
-    const xA=wS/2-tS*1.2,sorted=[...ints].sort((a,b)=>a.position.y-b.position.y);
-    const bY=btm?btm.position.y+tS/2:-hS/2;
-    const tY=top?top.position.y-tS/2:hS/2;
-    const levels=[{y1:bY,y2:sorted[0].position.y-tS/2}];
-    for(let i=0;i<sorted.length-1;i++)levels.push({y1:sorted[i].position.y+tS/2,y2:sorted[i+1].position.y-tS/2});
-    levels.push({y1:sorted[sorted.length-1].position.y+tS/2,y2:tY});
-    levels.forEach(lv=>{const cm=Math.round((lv.y2-lv.y1)*10*10)/10;if(cm<0.5)return;vArr(xA,lv.y1,lv.y2,zF,Number.isInteger(cm)?cm+' cm':cm.toFixed(1)+' cm');});
-  }
+
   scene.add(grp);
-  const b3=new THREE.Box3().setFromObject(grp),cen=b3.getCenter(new THREE.Vector3());grp.position.sub(cen);
-  const sz=b3.getSize(new THREE.Vector3()),fov2=camera.fov*Math.PI/180;
+  const b3=new THREE.Box3().setFromObject(grp);
+  const cen=b3.getCenter(new THREE.Vector3()); grp.position.sub(cen);
+  const sz=b3.getSize(new THREE.Vector3());
+  const fov2=camera.fov*Math.PI/180;
   const fd=Math.max(sz.x,sz.y)/(2*Math.tan(fov2/2))*1.7;
-  camera.position.set(-sz.x*0.5,sz.y*0.05,fd);camera.lookAt(0,0,0);
+  camera.position.set(-sz.x*0.5,sz.y*0.05,fd); camera.lookAt(0,0,0);
   const ctrl=new THREE.OrbitControls(camera,renderer.domElement);
-  ctrl.enableDamping=true;ctrl.dampingFactor=0.08;ctrl.enableZoom=true;ctrl.minPolarAngle=Math.PI/5;ctrl.maxPolarAngle=Math.PI*4/5;
+  ctrl.enableDamping=true;ctrl.dampingFactor=0.08;ctrl.enableZoom=true;
+  ctrl.minPolarAngle=Math.PI/5;ctrl.maxPolarAngle=Math.PI*4/5;
   let raf;(function loop(){raf=requestAnimationFrame(loop);ctrl.update();renderer.render(scene,camera);})();
   return()=>cancelAnimationFrame(raf);
 }
 
+
 function renderPage(order,statusName,tracking){
   const comments=order.user_comments||'';
 
-  // Parse ALL product codes from comments and from products array
+  // Parse ALL product codes
   const allCodes=[];
-  // 1. Extract from comments (multi-line code block)
-  const fullCodeBlock = comments.match(/Kod konfiguracji:\s*([\s\S]+?)(?:\n\n|$)/i);
-  if(fullCodeBlock){
-    fullCodeBlock[1].trim().split(/\r?\n/).forEach(line=>{
-      const c=line.trim();
-      if(c) allCodes.push(c);
-    });
-  }
-  // 2. If no codes found in comments, try per-product SKU
+
+  // 1. GŁÓWNE ŹRÓDŁO: SKU każdego produktu w zamówieniu (tak zapisuje index.html)
+  (order.products||[]).forEach(p=>{
+    if(p.sku && p.sku.trim().length>3){
+      const qty=parseInt(p.quantity)||1;
+      for(let q=0;q<qty;q++) allCodes.push(p.sku.trim());
+    }
+  });
+
+  // 2. ZAPASOWE: user_comments — blok "Kod konfiguracji:\n..."
   if(allCodes.length===0){
-    (order.products||[]).forEach(p=>{ if(p.sku) allCodes.push(p.sku); });
+    const commentBlock = comments.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    const codeSection = commentBlock.match(/Kod konfiguracji:\s*\n([\s\S]+)/i);
+    if(codeSection){
+      codeSection[1].split('\n').forEach(line=>{
+        const c=line.trim();
+        if(c && c.length>3 && /^[a-zA-Z]/.test(c)) allCodes.push(c);
+      });
+    }
   }
-  // 3. Fallback single code
+
+  // 3. OSTATECZNY FALLBACK: pojedynczy kod z komentarza
   if(allCodes.length===0){
-    const single=comments.match(/Kod:\s*([^\n\r]+)/i);
-    if(single) allCodes.push(single[1].trim());
+    const single=comments.match(/Kod(?:\s+konfiguracji)?:\s*([^\n\r]+)/i);
+    if(single && single[1].trim().length>3) allCodes.push(single[1].trim());
   }
+
+  console.log('Znalezione kody:', allCodes);
 
   // Parse all configs
   const cfgs=allCodes.map(c=>({code:c,cfg:parseCode(c)})).filter(x=>x.cfg);
@@ -335,14 +466,20 @@ function renderPage(order,statusName,tracking){
         </div>
         <div class="chips" style="margin-top:10px">
           <span class="chip g">${item.cfg.typeLabel}</span>
-          ${item.cfg.width?`<span class="chip">szer. ${item.cfg.width} cm</span>`:''}
+          ${item.cfg.isModular?`<span class="chip">moduł ${item.cfg.width} cm</span>`:item.cfg.width?`<span class="chip">szer. ${item.cfg.width} cm</span>`:''}
           ${item.cfg.height?`<span class="chip">wys. ${item.cfg.height} cm</span>`:''}
+          ${item.cfg.isModular&&item.cfg.connectingWidth?`<span class="chip">łącznik ${item.cfg.connectingWidth} cm</span>`:''}
           ${item.cfg.depth?`<span class="chip">gł. ${item.cfg.depth} cm</span>`:''}
           ${item.cfg.shelfCount?`<span class="chip">${item.cfg.shelfCount} półek wewn.</span>`:''}
           <span class="chip">Boki: ${item.cfg.sideLbl}</span>
           <span class="chip">Półki: ${item.cfg.shelfLbl}</span>
           ${item.cfg.noTop?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez górnej półki</span>`:''}
           ${item.cfg.noBottom?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez dolnej podstawy</span>`:''}
+          ${item.cfg.isMugShelf&&item.cfg.mugMount==='hanging'?`<span class="chip g">Wisząca</span>`:''}
+          ${item.cfg.isMugShelf&&item.cfg.mugMount==='standing'?`<span class="chip g">Stojąca</span>`:''}
+          ${item.cfg.divTop?`<span class="chip">Przegr. górna</span>`:''}
+          ${item.cfg.divMid?`<span class="chip">Przegr. środkowa</span>`:''}
+          ${item.cfg.divBot?`<span class="chip">Przegr. dolna</span>`:''}
         </div>
       </div>
     </div>`).join('') : '';
