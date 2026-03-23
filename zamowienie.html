@@ -171,7 +171,19 @@ function parseCode(raw){
   try{
     const p=code.split('-');
     if(p[0]==='m'&&p.length>=6){const col=p[5]||'01';return{type:'modular',typeLabel:'Modułowa',width:p[1]?.replace('w',''),height:p[2]?.replace('h',''),depth:p[4]?.replace('d',''),shelfCount:null,sideHex:COLOR_HEX[col[0]]||'#8B5A2B',shelfHex:COLOR_HEX[col[1]]||'#FFFFFF',sideLbl:COLOR_LABEL[col[0]]||'Dąb',shelfLbl:COLOR_LABEL[col[1]]||'Biała'};}
-    if(p.length>=7){const sc=p[5],shc=p[6];let cp=null;if(p[8]&&p[8].startsWith('cp'))cp=p[8].substring(2).split('.').map(Number).filter(n=>!isNaN(n));return{type:p[0],typeLabel:TYPE_LABEL[p[0]]||'Stojąca',width:p[1],height:p[2],depth:p[3],shelfCount:p[4],customPositions:cp,sideHex:COLOR_HEX[sc]||'#8B5A2B',shelfHex:COLOR_HEX[shc]||'#FFFFFF',sideLbl:COLOR_LABEL[sc]||'Dąb',shelfLbl:COLOR_LABEL[shc]||'Biała'};}
+    if(p.length>=7){
+      const sc=p[5],shc=p[6],optCode=p[7]||'';
+      let cp=null;
+      if(p[8]&&p[8].startsWith('cp'))cp=p[8].substring(2).split('.').map(Number).filter(n=>!isNaN(n));
+      // opcje: 't' = bez górnej półki, 'b' = bez dolnej półki/podstawy
+      const noTop = optCode.includes('t');
+      const noBottom = optCode.includes('b');
+      return{type:p[0],typeLabel:TYPE_LABEL[p[0]]||'Stojąca',
+        width:p[1],height:p[2],depth:p[3],shelfCount:p[4],customPositions:cp,
+        noTop,noBottom,
+        sideHex:COLOR_HEX[sc]||'#8B5A2B',shelfHex:COLOR_HEX[shc]||'#FFFFFF',
+        sideLbl:COLOR_LABEL[sc]||'Dąb',shelfLbl:COLOR_LABEL[shc]||'Biała'};
+    }
     return null;
   }catch(e){return null;}
 }
@@ -223,8 +235,18 @@ function build3D(canvas,cfg){
   const rS=new THREE.Mesh(sG.clone(),mkMat());rS.position.set(wS/2-tS/2,0,0);grp.add(rS);
   const iW=wS-2*tS,pG=new THREE.BoxGeometry(iW,tS,dS);
   const addP=(y,n)=>{const m=new THREE.Mesh(pG.clone(),mkMat());m.position.set(0,y,0);m.name=n;grp.add(m);return m;};
-  const btm=addP(-hS/2+tS/2,'b'),top=addP(hS/2-tS/2,'t'),ints=[];
-  if(N>0){const av=hS-2*tS,gap=av/(N+1);for(let i=1;i<=N;i++)ints.push(addP(-hS/2+tS+gap*i,'s'+i));}
+  // Górna i dolna półka zależnie od opcji
+  const noTop=!!cfg.noTop, noBottom=!!cfg.noBottom;
+  const btm=noBottom?null:addP(-hS/2+tS/2,'b');
+  const top=noTop?null:addP(hS/2-tS/2,'t');
+  const ints=[];
+  if(N>0){
+    const topT=noTop?0:tS, btmT=noBottom?0:tS;
+    const av=hS-topT-btmT;
+    const startY=-hS/2+btmT;
+    const gap=av/(N+1);
+    for(let i=1;i<=N;i++)ints.push(addP(startY+gap*i,'s'+i));
+  }
   const zF=dS/2+0.01;
   function mkLbl(txt,x,y,z){
     const cv=document.createElement('canvas');cv.width=256;cv.height=80;
@@ -244,9 +266,11 @@ function build3D(canvas,cfg){
   }
   if(ints.length>0){
     const xA=wS/2-tS*1.2,sorted=[...ints].sort((a,b)=>a.position.y-b.position.y);
-    const levels=[{y1:btm.position.y+tS/2,y2:sorted[0].position.y-tS/2}];
+    const bY=btm?btm.position.y+tS/2:-hS/2;
+    const tY=top?top.position.y-tS/2:hS/2;
+    const levels=[{y1:bY,y2:sorted[0].position.y-tS/2}];
     for(let i=0;i<sorted.length-1;i++)levels.push({y1:sorted[i].position.y+tS/2,y2:sorted[i+1].position.y-tS/2});
-    levels.push({y1:sorted[sorted.length-1].position.y+tS/2,y2:top.position.y-tS/2});
+    levels.push({y1:sorted[sorted.length-1].position.y+tS/2,y2:tY});
     levels.forEach(lv=>{const cm=Math.round((lv.y2-lv.y1)*10*10)/10;if(cm<0.5)return;vArr(xA,lv.y1,lv.y2,zF,Number.isInteger(cm)?cm+' cm':cm.toFixed(1)+' cm');});
   }
   scene.add(grp);
@@ -349,6 +373,8 @@ function renderPage(order,statusName,tracking){
               ${cfg.shelfCount?`<span class="chip">${cfg.shelfCount} półek wewn.</span>`:''}
               <span class="chip">Boki: ${cfg.sideLbl}</span>
               <span class="chip">Półki: ${cfg.shelfLbl}</span>
+              ${cfg.noTop?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez górnej półki</span>`:''}
+              ${cfg.noBottom?`<span class="chip" style="background:#fef3c7;color:#92400e;border-color:#fde68a">Bez dolnej podstawy</span>`:''}
             </div>
           </div>
         </div>`:''}
@@ -397,7 +423,7 @@ function renderPage(order,statusName,tracking){
         <div class="summary-card" style="overflow:hidden">
           <div class="contact-bar" style="border-radius:0">
             <div><strong>Masz pytanie?</strong><span>Odpiszemy w ciągu 24 godzin</span></div>
-            <a href="mailto:kontakt@polki.pl" class="contact-btn">Napisz do nas</a>
+            <div style="text-align:right"><div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:2px">E-mail</div><div style="font-size:.85rem;font-weight:600;color:white;letter-spacing:.01em">nowywymiar2@gmail.com</div></div>
           </div>
         </div>
 
