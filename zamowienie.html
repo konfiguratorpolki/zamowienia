@@ -546,6 +546,41 @@ function renderPage(order,statusName,tracking,invoice){
                 <span style="font-size:11px;font-weight:600;color:${step>=2?'#16a34a':'#9ca3af'};white-space:nowrap;">Wysłano</span>
               </div>
             </div>
+            ${step>=2&&tracking?`
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-top:16px;">
+              <div style="width:40px;height:40px;border-radius:10px;background:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:11px;font-weight:500;color:#166534;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">List przewozowy DPD</div>
+                <div style="font-size:15px;font-weight:500;color:#14532d;letter-spacing:.03em;">${tracking}</div>
+              </div>
+              <a href="https://tracktrace.dpd.com.pl/parcelDetails?p1=${tracking}" target="_blank" style="display:flex;align-items:center;gap:6px;background:#16a34a;color:white;font-size:12px;font-weight:500;padding:8px 14px;border-radius:8px;text-decoration:none;flex-shrink:0;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                Śledź paczkę
+              </a>
+            </div>`:''}
+            ${step>=2&&!tracking?`
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-top:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" style="flex-shrink:0"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <div>
+                <div style="font-size:.82rem;font-weight:600;color:#15803d;">Paczka w drodze!</div>
+                <div style="font-size:.72rem;color:#6b7280;">Numer śledzenia pojawi się wkrótce</div>
+              </div>
+            </div>`:''}
+            ${invoice?`
+            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-top:10px;">
+              <div style="width:40px;height:40px;border-radius:10px;background:#0284c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:11px;font-weight:500;color:#075985;text-transform:uppercase;letter-spacing:.05em;">Faktura VAT</div>
+              </div>
+              <a href="https://polki-backend-production.up.railway.app/api/invoice-pdf?order_id=${order.order_id}" target="_blank" style="display:flex;align-items:center;gap:6px;background:#0284c7;color:white;font-size:12px;font-weight:500;padding:8px 14px;border-radius:8px;text-decoration:none;flex-shrink:0;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Pobierz PDF
+              </a>
+            </div>`:''}
           </div>
           <div class="section">
             <div class="sec-label">${step>=2?'Szacowana dostawa DPD za':'Szacowana realizacja za'}</div>
@@ -585,28 +620,6 @@ function renderPage(order,statusName,tracking,invoice){
             <div style="font-size:.85rem;font-weight:600;color:#111827;margin-bottom:2px">${order.delivery_fullname}</div>
             <div style="font-size:.78rem;color:#9ca3af">${order.delivery_address||''}, ${order.delivery_postcode||''} ${order.delivery_city||''}</div>
           </div>`:''}
-          ${(order.want_invoice==1||order.invoice_company||order.invoice_nip||invoice)?`
-          <div class="sum-section">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <span class="sec-label" style="margin-bottom:0;">Faktura VAT</span>
-            </div>
-            ${invoice?`
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;margin-bottom:8px;">
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  <div>
-                    <div style="font-size:.82rem;font-weight:600;color:#15803d">Faktura ${invoice.full_numerator||invoice.invoice_id||''}</div>
-                    ${invoice.date_add?`<div style="font-size:.68rem;color:#6b7280">${new Date(invoice.date_add*1000).toLocaleDateString('pl-PL')}</div>`:''}
-                  </div>
-                </div>
-                ${invoice.invoice_id?`<a href="https://polki-backend-production.up.railway.app/api/invoice-pdf?order_id=${order.order_id}" target="_blank" style="font-size:.72rem;font-weight:600;color:#16a34a;text-decoration:none;background:#fff;border:1px solid #bbf7d0;border-radius:6px;padding:4px 10px;">Pobierz PDF →</a>`:''}
-              </div>`:''}
-            ${order.invoice_company?`<div style="font-size:.82rem;font-weight:600;color:#111827;margin-bottom:2px">${order.invoice_company}</div>`:''}
-            ${order.invoice_nip?`<div style="font-size:.75rem;color:#6b7280;margin-bottom:2px">NIP: <b>${order.invoice_nip}</b></div>`:''}
-            ${order.invoice_address?`<div style="font-size:.75rem;color:#9ca3af">${order.invoice_address}${order.invoice_postcode?', '+order.invoice_postcode:''} ${order.invoice_city||''}</div>`:''}
-            ${!invoice&&!order.invoice_company&&!order.invoice_nip?`<div style="font-size:.78rem;color:#9ca3af;font-style:italic">Faktura zostanie wystawiona wkrótce</div>`:''}
-          </div>`:''}
           ${(order.products||[]).length>0?`
           <div class="sum-section">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
@@ -634,36 +647,9 @@ function renderPage(order,statusName,tracking,invoice){
         </div>
       </div>
 
-      <!-- STREFA 3: 3D + TRACKING -->
+      <!-- STREFA 3: 3D -->
       <div class="col-3d">
         ${threeDCards}
-        ${tracking?`
-        <div class="card">
-          <div class="section">
-            <div class="sec-label">Śledzenie paczki DPD</div>
-            <a href="https://tracktrace.dpd.com.pl/parcelDetails?p1=${tracking}" target="_blank" class="track-link">
-              <div class="track-icon"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-              <div>
-                <div class="track-lbl">List przewozowy DPD</div>
-                <div class="track-num">${tracking}</div>
-                <div style="font-size:.68rem;color:#9ca3af;margin-top:2px">Kliknij aby śledzić paczkę</div>
-              </div>
-              <span style="margin-left:auto;color:#16a34a;font-size:1.1rem">→</span>
-            </a>
-          </div>
-        </div>`:''}
-        ${step>=2&&!tracking?`
-        <div class="card">
-          <div class="section">
-            <div style="display:flex;align-items:center;gap:8px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-              <div>
-                <div style="font-size:.82rem;font-weight:600;color:#15803d;">Paczka w drodze!</div>
-                <div style="font-size:.72rem;color:#6b7280;">Numer śledzenia pojawi się wkrótce</div>
-              </div>
-            </div>
-          </div>
-        </div>`:''}
       </div>
 
       <!-- STREFA 4: KONTAKT -->
