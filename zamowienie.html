@@ -231,15 +231,16 @@ function parseCode(raw){
 
 function getStep(name){
   const n=(name||'').toLowerCase();
-  if(n.includes('dostarczon')||n.includes('odebran'))return 3;
   if(n.includes('wysłan')||n.includes('wyslano')||n.includes('shipped'))return 2;
-  if(n.includes('realizac')||n.includes('produkcj')||n.includes('processing'))return 1;
+  if(n.includes('do wysłania')||n.includes('do wyslania')||n.includes('wysyłki')||n.includes('wysylki'))return 1;
   return 0;
 }
 
-function calcDeliveryDate(ts){
-  const d=new Date(ts*1000);let added=0;
-  while(added<7){d.setDate(d.getDate()+1);const dow=d.getDay();if(dow!==0&&dow!==6)added++;}
+function calcDeliveryDate(ts, step){
+  const d = step >= 2 ? new Date() : new Date(ts*1000);
+  const daysToAdd = step >= 2 ? 2 : 7; // Wysłano = +2 dni robocze DPD, inne = +7
+  let added = 0;
+  while(added < daysToAdd){ d.setDate(d.getDate()+1); const dow=d.getDay(); if(dow!==0&&dow!==6) added++; }
   return d;
 }
 
@@ -452,24 +453,21 @@ function renderPage(order,statusName,tracking,invoice){
   const step=getStep(statusName);
   const total=(order.products||[]).reduce((s,p)=>s+parseFloat(p.price_brutto||0)*parseInt(p.quantity||1),0);
   const dateStr=new Date(order.date_add*1000).toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'});
-  const delivDate=calcDeliveryDate(order.date_add);
+  const delivDate=calcDeliveryDate(order.date_add, step);
   const delivStr=delivDate.toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'});
-  const stepLabels3=['Opłacone','Produkcja','Dostawa'];
+
+  // 3 segmenty: Opłacone / Do wysłania / Wysłano
   const seg=[
-    step===0?'#16a34a':'#16a34a',
-    step>=2?'#16a34a':step===1?'#bbf7d0':'#e5e7eb',
-    step>=3?'#16a34a':'#e5e7eb'
+    '#16a34a',
+    step>=1?'#16a34a':'#e5e7eb',
+    step>=2?'#16a34a':'#e5e7eb'
   ];
   const step3Classes=[
-    step>=0?'p-done':'p-wait',
-    step>=2?'p-done':step===1?'p-active':'p-wait',
-    step>=3?'p-done':'p-wait'
+    'p-done',
+    step>=1?'p-done':step===0?'p-active':'p-wait',
+    step>=2?'p-done':'p-wait'
   ];
-  const krokLabel=step===0?'Krok 1 / 3':step===1?'Krok 2 / 3':step===2?'Krok 3 / 3':'Zrealizowane';
-  const stepLabels=['Przyjęte','W produkcji','Wysłane','Dostarczone'];
-  const classes=stepLabels.map((_,i)=>i<step?'p-done':i===step?'p-active':'p-wait');
-  const pct=[0,25,62,100][step]||0;
-  const dotPos=[0,25,62,100][step]||0;
+  const krokLabel=step===0?'Krok 1 / 3':step===1?'Krok 2 / 3':step>=2?'Krok 3 / 3':'Krok 1 / 3';
 
   // Build product cards — snapshot jeśli dostępny, fallback do 3D
   const threeDCards = cfgs.length>0 ? cfgs.map((item,idx)=>{
@@ -519,12 +517,12 @@ function renderPage(order,statusName,tracking,invoice){
             </div>
             <div class="progress-steps3">
               <div class="ps-left"><div class="ps-name ${step3Classes[0]}">Opłacone</div></div>
-              <div class="ps-center"><div class="ps-name ${step3Classes[1]}">Produkcja</div><div class="ps-sub">5–7 dni rob.</div></div>
-              <div class="ps-right"><div class="ps-name ${step3Classes[2]}">Dostawa</div></div>
+              <div class="ps-center"><div class="ps-name ${step3Classes[1]}">Do wysłania</div><div class="ps-sub">5–7 dni rob.</div></div>
+              <div class="ps-right"><div class="ps-name ${step3Classes[2]}">Wysłano</div></div>
             </div>
           </div>
           <div class="section">
-            <div class="sec-label">Szacowana dostawa za</div>
+            <div class="sec-label">${step>=2?'Szacowana dostawa DPD za':'Szacowana realizacja za'}</div>
             <div class="countdown">
               <div class="cd-box"><div class="cd-num" id="cd-d">--</div><div class="cd-unit">Dni</div></div>
               <div class="cd-sep">:</div>
@@ -549,7 +547,7 @@ function renderPage(order,statusName,tracking,invoice){
             <div class="sum-row"><span class="sum-lbl">Status</span><span class="sum-val" style="color:#d97706">${statusName}</span></div>
             <div class="sum-row"><span class="sum-lbl">Data</span><span class="sum-val">${dateStr}</span></div>
             <div class="sum-row"><span class="sum-lbl">Dostawa / Płatność</span><span class="sum-val">${order.delivery_method||'Kurier'} · ${order.payment_method||'Przelew'}</span></div>
-            <div class="sum-row"><span class="sum-lbl">Szac. dostawa</span><span class="sum-val" style="color:#16a34a">${delivStr}</span></div>
+            <div class="sum-row"><span class="sum-lbl">${step>=2?'Szac. dostawa DPD':'Szac. realizacja'}</span><span class="sum-val" style="color:#16a34a">${delivStr}</span></div>
 
           </div>
           ${order.delivery_fullname?`
@@ -616,12 +614,28 @@ function renderPage(order,statusName,tracking,invoice){
         ${tracking?`
         <div class="card">
           <div class="section">
-            <div class="sec-label">Śledzenie paczki</div>
-            <a href="https://www.dhl.com/pl-pl/home/sledzenie.html?tracking-id=${tracking}" target="_blank" class="track-link">
+            <div class="sec-label">Śledzenie paczki DPD</div>
+            <a href="https://tracktrace.dpd.com.pl/parcelDetails?p1=${tracking}" target="_blank" class="track-link">
               <div class="track-icon"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-              <div><div class="track-lbl">List przewozowy</div><div class="track-num">${tracking}</div></div>
+              <div>
+                <div class="track-lbl">List przewozowy DPD</div>
+                <div class="track-num">${tracking}</div>
+                <div style="font-size:.68rem;color:#9ca3af;margin-top:2px">Kliknij aby śledzić paczkę</div>
+              </div>
               <span style="margin-left:auto;color:#16a34a;font-size:1.1rem">→</span>
             </a>
+          </div>
+        </div>`:''}
+        ${step>=2&&!tracking?`
+        <div class="card">
+          <div class="section">
+            <div style="display:flex;align-items:center;gap:8px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <div>
+                <div style="font-size:.82rem;font-weight:600;color:#15803d;">Paczka w drodze!</div>
+                <div style="font-size:.72rem;color:#6b7280;">Numer śledzenia pojawi się wkrótce</div>
+              </div>
+            </div>
           </div>
         </div>`:''}
       </div>
