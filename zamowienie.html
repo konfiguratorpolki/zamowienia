@@ -454,7 +454,10 @@ function renderPage(order,statusName,tracking,invoice){
   const cfgs=allCodes.map(c=>({code:c,cfg:parseCode(c)})).filter(x=>x.cfg);
 
   const step=getStep(statusName);
-  const total=(order.products||[]).reduce((s,p)=>s+parseFloat(p.price_brutto||0)*parseInt(p.quantity||1),0);
+  const productsTotal=(order.products||[]).reduce((s,p)=>s+parseFloat(p.price_brutto||0)*parseInt(p.quantity||1),0);
+  const shipping=parseFloat(order.delivery_price||0);
+  const discount=parseFloat(order.discount_normal||0);
+  const total=productsTotal+shipping-discount;
   const dateStr=new Date(order.date_add*1000).toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'});
   const delivDate=calcDeliveryDate(order.date_add, step);
   const delivStr=delivDate.toLocaleDateString('pl-PL',{day:'numeric',month:'long',year:'numeric'});
@@ -640,9 +643,14 @@ function renderPage(order,statusName,tracking,invoice){
               </div>`).join('')}
             </div>
           </div>`:''}
-          <div class="sum-total">
-            <span class="lbl">Zapłacono</span>
-            <span class="val">${total.toFixed(2).replace('.',',')} zł</span>
+          <div class="sum-total" style="flex-direction:column;align-items:stretch;gap:0;padding:12px 20px;">
+            ${shipping>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:.8rem;"><span style="color:#6b7280;">Dostawa</span><span style="font-weight:500;color:#111827;">${shipping.toFixed(2).replace('.',',')} zł</span></div>`:''}
+            ${discount>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:.8rem;"><span style="color:#6b7280;">Rabat</span><span style="font-weight:500;color:#16a34a;">−${discount.toFixed(2).replace('.',',')} zł</span></div>`:''}
+            ${(shipping>0||discount>0)?`<div style="border-top:1px solid #bbf7d0;margin:8px 0;"></div>`:''}
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span class="lbl">Zapłacono</span>
+              <span class="val">${total.toFixed(2).replace('.',',')} zł</span>
+            </div>
           </div>
         </div>
       </div>
